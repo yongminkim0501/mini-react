@@ -101,7 +101,10 @@ export async function register(github, config, event, actor) {
   const commit = await github.request(`commits/${encodeURIComponent(ref)}`);
   const tree = await github.request(`git/trees/${commit.sha}?recursive=1`);
   if (tree.truncated) throw Error('Truncated tree; refusing partial registration');
-  const files = tree.tree.filter(f => config.sources[f.path.split('/')[0]] && f.path.endsWith('.md'));
+  const inputs = tree.tree.filter(f => /^issue-[^/]+\//.test(f.path) && f.path.endsWith('.md'));
+  const unmapped = [...new Set(inputs.map(f => f.path.split('/')[0]).filter(dir => !Object.hasOwn(config.sources,dir)))];
+  if (unmapped.length) throw Error(`Unmapped issue directories: ${unmapped.join(', ')}. Add directory-to-GitHub-login mappings to .github/ax-issue-intake.json`);
+  const files = inputs;
   if (files.length > config.maxFiles) throw Error('Source file limit exceeded');
   const issues = (await github.pages('issues?state=all')).filter(i => !i.pull_request);
   const labels = new Set((await github.pages('labels')).map(l => l.name));
