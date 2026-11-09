@@ -4,9 +4,9 @@
 
 **Phase 1 흐름 미완성** · 높음 · 예상
 
-- **현상:** 변환 모듈 4개(`fromHtml`, `fromDom`, `createDom`/`mount`, `serialize`)만 있다. 실제 영역·테스트 영역·Patch/뒤로가기/앞으로가기 버튼 UI, diff, patch, State History, 컨트롤러가 없다. `src/main.ts`는 자리 표시 코드다.
-- **영향:** 로드 흐름(fromDom → mount → serialize)은 테스트로만 검증되었고 실제 페이지에서 동작하지 않는다.
-- **다음 작업:** diff/patch 기획. CD-01, FD-01, HV-04, HV-08을 설계에 반영한다.
+- **현상:** 변환 모듈 4개(`fromHtml`, `fromDom`, `createDom`/`mount`, `serialize`)와 `diff`, `applyPatches`까지 있다. 실제 영역·테스트 영역·Patch/뒤로가기/앞으로가기 버튼 UI, State History, 컨트롤러가 없다. `src/main.ts`는 자리 표시 코드다.
+- **영향:** 로드 흐름(fromDom → mount → serialize)과 Patch 흐름(fromHtml → diff → applyPatches)은 테스트로만 검증되었고 실제 페이지에서 동작하지 않는다.
+- **다음 작업:** State History와 컨트롤러(페이지 UI) 기획. FD-01, AP-02, AP-03, HV-11을 설계에 반영한다.
 
 ## PJ-02
 

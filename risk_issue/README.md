@@ -2,14 +2,14 @@
 
 작성일: 2026-11-06
 
-지금까지 구현한 모듈(`fromHtml`, `fromDom`, `createDom`/`mount`, `serialize`)에서 깨지거나 문제가 예상되는 부분을 모은 목록이다. 항목별 상세는 모듈별 파일에 있다.
+지금까지 구현한 모듈(`fromHtml`, `fromDom`, `createDom`/`mount`, `serialize`, `diff`, `applyPatches`)에서 깨지거나 문제가 예상되는 부분을 모은 목록이다. 항목별 상세는 모듈별 파일에 있다.
 
 ## 표기
 
 | 항목 | 값 |
 |------|----|
 | 심각도 | **높음**: 보안 또는 다음 단계(diff/patch) 진행을 막음 · **중간**: 특정 입력에서 결과가 틀림 · **낮음**: 드문 입력, UX, 문서화로 충분 |
-| 상태 | **확인됨**: 재현 코드로 직접 확인 · **예상**: 코드·명세 분석으로 예상 · **기획 리스크**: 기획서에 이미 적힌 항목 |
+| 상태 | **확인됨**: 재현 코드로 직접 확인 · **예상**: 코드·명세 분석으로 예상 · **기획 리스크**: 기획서에 이미 적힌 항목 · **해결됨**: 이후 모듈에서 대응 완료 |
 
 ## 전체 목록
 
@@ -31,9 +31,9 @@
 | [FD-03](./from-dom.md#fd-03) | fromDom | 중간 | 기획 리스크 | 실제 영역 샘플의 이벤트 속성도 보안 필터로 제거됨 |
 | [FD-04](./from-dom.md#fd-04) | fromDom | 낮음 | 기획 리스크 | 최상위 `<tr>`, `<td>` 샘플은 사라짐 |
 | [FD-05](./from-dom.md#fd-05) | fromDom | 낮음 | 예상 | Shadow DOM·커스텀 요소 내부는 표현되지 않음 |
-| [CD-01](./create-dom.md#cd-01) | createDom | 높음 | 확인됨 | SVG 하위 노드를 단독으로 만들면 HTML 요소가 되어 그려지지 않음 |
+| [CD-01](./create-dom.md#cd-01) | createDom | 높음 | 해결됨 (applyPatches) | SVG 하위 노드를 단독으로 만들면 HTML 요소가 되어 그려지지 않음 |
 | [CD-02](./create-dom.md#cd-02) | createDom | 높음 | 기획 리스크 | 손으로 만든 VNode는 보안 필터를 거치지 않음 |
-| [CD-03](./create-dom.md#cd-03) | createDom | 중간 | 예상 | 사용자가 수정한 폼은 `setAttribute('value')`로 화면이 안 바뀜 |
+| [CD-03](./create-dom.md#cd-03) | createDom | 중간 | 해결됨 (applyPatches) | 사용자가 수정한 폼은 `setAttribute('value')`로 화면이 안 바뀜 |
 | [CD-04](./create-dom.md#cd-04) | createDom | 중간 | 예상 | 깊은 트리에서 재귀 스택 오버플로 |
 | [CD-05](./create-dom.md#cd-05) | createDom | 낮음 | 예상 | 구형 브라우저에서 특이한 속성 이름으로 `setAttribute` 예외 |
 | [CD-06](./create-dom.md#cd-06) | createDom | 낮음 | 예상 | `xlink:href`를 네임스페이스 없이 설정 |
@@ -43,12 +43,25 @@
 | [SR-03](./serialize.md#sr-03) | serialize | 낮음 | 예상 | 주석이 테스트 영역에서 사라짐 |
 | [SR-04](./serialize.md#sr-04) | serialize | 낮음 | 기획 리스크 | 텍스트 섞인 긴 요소가 한 줄로 길게 출력됨 |
 | [SR-05](./serialize.md#sr-05) | serialize | 중간 | 기획 리스크 | 출력 규칙과 fromHtml 정리 규칙이 어긋나면 왕복 깨짐 |
-| [PJ-01](./project.md#pj-01) | 프로젝트 | 높음 | 예상 | 페이지 UI·diff·patch·History 미구현으로 Phase 1 흐름 미완성 |
+| [DF-01](./diff.md#df-01) | diff | 높음 | 해결됨 (applyPatches) | 경로가 이전 트리 기준이라 순서대로 바로 적용하면 인덱스가 밀림 |
+| [DF-02](./diff.md#df-02) | diff | 중간 | 기획 리스크 | 리스트 앞쪽 삽입·삭제 시 Patch 증가, 화면 상태가 엉뚱한 항목에 남음 |
+| [DF-03](./diff.md#df-03) | diff | 높음 | 해결됨 (applyPatches) | SVG 안 CREATE/REPLACE에 네임스페이스 정보 없음 |
+| [DF-04](./diff.md#df-04) | diff | 중간 | 해결됨 (applyPatches) | 폼 요소 `value`/`checked`는 속성 변경만으로 화면에 반영 안 됨 |
+| [DF-05](./diff.md#df-05) | diff | 낮음 | 예상 | Patch가 VNode·프로토타입 없는 객체를 참조로 공유 |
+| [AP-01](./apply-patches.md#ap-01) | applyPatches | 중간 | 확인됨 | 사용자가 수정한 textarea는 TEXT Patch로 화면 값이 안 바뀜 |
+| [AP-02](./apply-patches.md#ap-02) | applyPatches | 중간 | 예상 | 적용 단계 중간 예외 시 반쯤 바뀐 화면이 남음 |
+| [AP-03](./apply-patches.md#ap-03) | applyPatches | 높음 | 기획 리스크 | 정규화 마운트 없이 호출하면 오동작 (종류 검사로 일부만 차단) |
+| [AP-04](./apply-patches.md#ap-04) | applyPatches | 중간 | 기획 리스크 | key 기반 diff 도입 시 CREATE를 중간에 넣을 anchor 필요 |
+| [AP-05](./apply-patches.md#ap-05) | applyPatches | 낮음 | 예상 | REPLACE/REMOVE 시 포커스·입력 상태 유실 |
+| [PJ-01](./project.md#pj-01) | 프로젝트 | 높음 | 예상 | 페이지 UI·State History·컨트롤러 미구현으로 Phase 1 흐름 미완성 |
 | [PJ-02](./project.md#pj-02) | 프로젝트 | 낮음 | 예상 | 테스트가 jsdom 기반이라 실제 브라우저 동작과 다를 수 있음 |
 
 ## 우선 처리 권장
 
-1. **CD-01, FD-01**: diff/patch 설계 전에 결정해야 한다. patch가 부모 네임스페이스를 넘기는 방식과, 실제 영역에 대한 쓰기 권한을 patch로 한정하는 규칙이 필요하다.
+1. **FD-01, AP-03**: 실제 영역에 쓰는 코드는 `mount`와 `applyPatches`뿐이라는 규칙을 컨트롤러에 반영한다.
 2. **HV-01**: 보안 항목. 차단 목록에 `animate`, `set`, `animateMotion`, `animateTransform`을 추가하면 끝난다.
-3. **HV-02, CD-04**: 깊이 제한을 정하고 초과 시 `ok: false`로 처리한다.
-4. **HV-03**: 실제 영역과 테스트 영역의 화면이 달라 보이는 문제라 사용자가 바로 눈치챈다. 규칙 변경 여부를 결정해야 한다.
+3. **AP-01, AP-02**: textarea 동기화 한 줄 추가, 컨트롤러의 예외 시 재마운트 복구.
+4. **HV-02, CD-04**: 깊이 제한을 정하고 초과 시 `ok: false`로 처리한다.
+5. **HV-03**: 실제 영역과 테스트 영역의 화면이 달라 보이는 문제라 사용자가 바로 눈치챈다. 규칙 변경 여부를 결정해야 한다.
+
+해결된 항목(CD-01, CD-03, DF-01, DF-03, DF-04)은 기록을 위해 목록에 남겨 둔다.
