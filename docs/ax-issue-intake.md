@@ -8,12 +8,12 @@
 
 `.github/ax-issue-intake.json`의 sources에 `디렉터리: GitHub 계정`을 등록한다. 현재 `issue-ym: yongminkim0501`이다. 별칭은 로그인명과 달라도 된다. 팀원 추가 시 collaborator 등록과 이 매핑을 둘 다 반영한다.
 
-디렉터리명은 YM으로 고정되지 않는다. 팀원이 각각 `issue-ym/`, `issue-xx/`, `issue-ab/`처럼 서로 다른 이니셜을 사용할 수 있다. 각 디렉터리 이름을 sources의 키로 추가하고 실제 collaborator의 GitHub 로그인명을 값으로 지정한다. 아래 구조의 `GitHub로그인명`은 설명용 자리표시자이며 실제 설정에는 확인된 계정을 넣는다.
+디렉터리명은 YM으로 고정되지 않는다. 팀원이 각각 `issue-ym/`, `issue-mj/`, `issue-zy/`처럼 서로 다른 이니셜을 사용할 수 있다. 각 디렉터리 이름을 sources의 키로 추가하고 실제 collaborator의 GitHub 로그인명을 값으로 지정한다. 아래 구조의 `GitHub로그인명`은 설명용 자리표시자이며 실제 설정에는 확인된 계정을 넣는다.
 
 ```text
 issue-ym/ → yongminkim0501
-issue-xx/ → XX 사용자의 실제 GitHub로그인명
-issue-ab/ → AB 사용자의 실제 GitHub로그인명
+issue-mj/ → MJ 사용자의 실제 GitHub로그인명
+issue-zy/ → ZY 사용자의 실제 GitHub로그인명
 ```
 
 각 디렉터리는 하위 폴더까지 처리한다. 서로 다른 디렉터리에서는 같은 파일명·id를 써도 별개의 입력으로 식별하며, 중복 내용인지는 이후 Claude가 비교한다. 매핑되지 않은 `issue-*` 디렉터리에서 Markdown이 발견되면 조용히 무시하지 않고 설정 추가가 필요하다는 오류로 중단한다. 매핑과 현재 collaborator 확인을 모두 통과해야 등록된다.

@@ -153,13 +153,13 @@ test('revoked source owner is excluded even when feedback already exists',async(
 });
 
 test('different initials use their own owners and namespaced ids even for identical filenames',()=>{
- const multi={...config,sources:{'issue-ym':'alice','issue-xx':'bob'}};
+ const multi={...config,sources:{'issue-ym':'alice','issue-mj':'bob'}};
  const a=parseIssue(text({id:'same-001'}),'issue-ym/nested/problem.md',multi);
- const b=parseIssue(text({id:'same-001'}),'issue-xx/nested/problem.md',multi);
+ const b=parseIssue(text({id:'same-001'}),'issue-mj/nested/problem.md',multi);
  assert.equal(a.owner,'alice');assert.equal(b.owner,'bob');assert.notEqual(a.key,b.key);
 });
 test('one push scans multiple mapped initials and refuses unmapped input before writes',async()=>{
- const multi={...config,sources:{'issue-ym':'alice','issue-xx':'bob'}};
+ const multi={...config,sources:{'issue-ym':'alice','issue-mj':'bob'}};
  const github=new Fake();github.items=[];
  let unknown=false;
  github.pages=async path=>path==='issues?state=all'?structuredClone(github.items):path==='labels'?source.labels.map(name=>({name})):[];
@@ -169,7 +169,7 @@ test('one push scans multiple mapped initials and refuses unmapped input before 
   if(path.startsWith('commits/'))return {sha:'abc'};
   if(path.startsWith('git/trees/'))return {truncated:false,tree:[
    {path:'issue-ym/shared.md',mode:'100644',type:'blob',sha:'a',size:100},
-   {path:'issue-xx/nested/shared.md',mode:'100644',type:'blob',sha:'b',size:100},
+   {path:'issue-mj/nested/shared.md',mode:'100644',type:'blob',sha:'b',size:100},
    ...(unknown?[{path:'issue-zz/one.md',mode:'100644',type:'blob',sha:'z',size:100}]:[]),
   ]};
   if(path.startsWith('git/blobs/'))return {content:Buffer.from(text({id:'same-001'})).toString('base64')};
