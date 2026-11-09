@@ -1,0 +1,19 @@
+# CI 도입안에 따라 담당자는 비워 둡니다.
+# 사람이 각 줄 끝에 실제 @계정 또는 @조직/팀을 지정해야 보호가 적용됩니다.
+# Rulesets의 Require review from Code Owners도 별도로 켜야 합니다.
+/.github/workflows/
+/.github/CODEOWNERS
+/tools/ax/package.json
+/tools/ax/package-lock.json
+/.oxlintrc.json
+/.nvmrc
+/AGENTS.md
+/skills/ax-submit-pr/
+/scripts/ci/
+/scripts/ax/*.test.mjs
+/scripts/ax/test_metrics.py
+/.gitignore
+/.eslintignore
+/.oxlintignore
+**/.oxlintrc.*
+**/oxlint.config.*
