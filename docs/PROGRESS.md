@@ -8,8 +8,8 @@
 
 | 단계 | 내용 | 상태 |
 |------|------|------|
-| Phase 1 | Virtual DOM 변환, Diff, Patch | 핵심 모듈 완료 |
-| Phase 1 | 화면(실제 영역, 테스트 영역, Patch/뒤로가기/앞으로가기 버튼), State History | 미착수 |
+| Phase 1 | Virtual DOM 변환, Diff, Patch, State History | 핵심 모듈 완료 |
+| Phase 1 | 화면(실제 영역, 테스트 영역, Patch/뒤로가기/앞으로가기 버튼) | 미착수 |
 | Phase 2 | 함수형 컴포넌트, state, hooks (`useState`, `useEffect`, `useMemo`) | 미착수 |
 
 제약: 바닐라 JS/TS만 사용하고 상용 프레임워크는 쓰지 않는다. Vite, Vitest, jsdom, TypeScript는 개발 도구로만 쓴다.
@@ -27,7 +27,9 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 1. 테스트 영역 텍스트를 `fromHtml`로 새 VNode로 만든다.
 2. 현재 VNode와 `diff`해서 Patch 목록을 얻는다.
 3. `applyPatches`로 실제 영역에 반영한다. `ok: false`면 `mount`로 다시 그린다.
-4. 새 VNode를 State History에 넣는다.
+4. 새 VNode를 `history.push`로 저장한다. Patch가 빈 배열이면 저장하지 않는다.
+
+뒤로가기/앞으로가기: `history.back()`/`forward()`로 받은 VNode와 현재 VNode를 `diff` → `applyPatches`(실패 시 `mount`) → 테스트 영역에 `serialize` 결과를 넣는다.
 
 ## 3. 모듈 현황
 
@@ -39,7 +41,7 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 | VNode → HTML | `src/core/vnode-to-html/` | [serialize.md](./serialize.md) | `serialize` | 완료 | 553cae9, 47643d0 |
 | Diff | `src/core/diff/` | [diff.md](./diff.md) | `diff`, `diffProps`, `Patch` 타입 | 완료 | 608100c, d5f9203 |
 | Patch 적용 | `src/core/patch/` | [apply-patches.md](./apply-patches.md) | `applyPatches`, `resolvePath`, `syncFormProp` | 완료 | 1dff63d, 1e07a68 |
-| State History | - | 미작성 | - | 미착수 | - |
+| State History | `src/state/history.ts` | [state-history.md](./state-history.md) | `StateHistory` (`push`, `back`, `forward`, `current`, `canBack`, `canForward`, `position`) | 완료 | b05f2c3, 36f9c24 |
 | 컨트롤러·UI | `src/main.ts` (현재 placeholder) | 미작성 | - | 미착수 | - |
 | 컴포넌트·hooks | - | 미작성 | - | 미착수 | - |
 
@@ -79,9 +81,16 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 - `value`, `checked`, `selected`는 속성과 함께 property도 맞춘다. file 입력의 `value`는 건너뛴다.
 - `changed`는 바뀐 요소 목록이다. 텍스트 변경과 삭제는 부모 요소를 담는다. 하이라이트에 쓸 수 있다.
 
+### StateHistory
+
+- `snapshots` 배열과 `cursor`로 관리한다. 동결된 VNode를 복사 없이 참조로 저장한다.
+- `push`는 `cursor` 뒤 기록을 버리고 끝에 추가한다. `back`/`forward`는 끝에 닿으면 상태를 바꾸지 않고 `null`을 돌려준다.
+- 비어 있으면 `current`는 `null`, `position`은 `{index: 0, total: 0}`이다.
+- 저장 개수 제한 없음, `goTo`는 후속. 빈 Patch 시 저장 안 함은 컨트롤러가 처리한다.
+
 ## 5. 테스트
 
-`npm run test:run` 기준 11개 파일, 150개 통과. `npm run typecheck` 오류 없음.
+`npm run test:run` 기준 12개 파일, 156개 통과. `npm run typecheck` 오류 없음.
 
 | 파일 | 내용 |
 |------|------|
@@ -95,6 +104,7 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 | `diff/diff.test.ts` | Patch 종류별 단위 테스트 |
 | `diff/diff.integration.test.ts` | 기획서 시나리오, 경로 존재, 입력 불변 |
 | `patch/applyPatches.test.ts` | 변경 기록 검증, 실패 시 무변경, SVG, 폼, 왕복 10종, 연속 적용 |
+| `state/history.test.ts` | 기획서 7장 순서, 빈 기록, 참조 동일성, 동결, push 100회 |
 | `setup.test.ts` | jsdom 동작 확인 |
 
 ## 6. 주요 결정
@@ -104,6 +114,8 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 - 들여쓰기는 2칸이다.
 - key 기반 diff는 뒤로 미룬다. 지금은 인덱스 기반이다.
 - 경로 불일치 시 다시 그리기, 변경 하이라이트는 컨트롤러가 맡는다.
+- State History는 저장 개수를 제한하지 않는다. Patch가 빈 배열이면 저장하지 않는다(컨트롤러).
+- 테스트 영역을 수정만 하고 뒤로가기를 누르면 수정 내용이 사라진다. 확인 창 여부는 화면 조립 단계에서 정한다.
 
 ## 7. 우선 처리할 리스크
 
@@ -117,9 +129,8 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 
 ## 8. 다음 작업
 
-1. State History 기획과 구현 (뒤로가기/앞으로가기).
-2. 컨트롤러와 화면: 실제 영역, 테스트 영역, 버튼 연결, 실패 시 다시 그리기, 변경 하이라이트.
-3. Phase 2: 함수형 컴포넌트와 hooks.
+1. 컨트롤러와 화면: 실제 영역, 테스트 영역, 버튼 연결, 실패 시 다시 그리기, 변경 하이라이트.
+2. Phase 2: 함수형 컴포넌트와 hooks.
 
 ## 9. 커밋 기록
 
@@ -136,5 +147,7 @@ Patch 버튼 한 번의 예상 흐름(컨트롤러 미구현):
 | 608100c / d5f9203 | diff 기획서 / 구현 |
 | 1dff63d / 1e07a68 | applyPatches 기획서 / 구현 |
 | 306189c | 리스크·이슈 목록 갱신 (diff, applyPatches) |
+| d5ef8ca | 진행 현황 문서 |
+| b05f2c3 / 36f9c24 | StateHistory 기획서 / 구현 |
 
 `a3bf406`부터 최신 커밋까지는 아직 원격에 올리지 않았다.
