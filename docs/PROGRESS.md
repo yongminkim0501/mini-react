@@ -179,15 +179,18 @@ setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
 
 1. FD-01 / AP-03: Patch 외 DOM 변경으로 DOM·VNode 대응이 깨지는 문제. 컨트롤러가 로드 시 정규화 mount, 실패 시 재mount로 대응했다.
 2. HV-01: SVG `<animate>`/`<set>`로 `javascript:` 필터 우회 가능.
-3. AP-01 / AP-02: 사용자가 입력한 textarea는 TEXT Patch로 값이 안 바뀜. 반영 중 예외가 나면 화면이 반쯤 바뀐 채 남음.
+3. AP-01: 사용자가 입력한 textarea는 TEXT Patch로 값이 안 바뀜. (AP-02는 재mount로 해결)
 4. HV-02 / CD-04: 깊은 중첩에서 스택 오버플로.
 5. HV-03: 인라인 요소 사이 줄바꿈이 사라져 `A B`가 `AB`로 보임.
+6. RT-02 / RT-03: 렌더링 실패·무한 렌더링 중단 후 상태 값이 화면보다 앞섬. `setState` 값을 렌더링 성공 시 확정하면 해결.
+7. EV-01: 제어 입력에서 상태가 그대로면 사용자 입력이 DOM에 남음.
+8. RT-01: 목록 중간 삭제 시 포커스가 다른 항목으로 넘어감 (key 기반 diff 필요).
 
 ## 8. 다음 작업
 
 1. PR #2(`feat/virtual-dom-vnode` → `develop`) 병합 후 Phase 2 PR 생성.
-2. 리스크 정리: Phase 2 항목을 `risk_issue/`에 추가 (인덱스 diff로 목록 중간 삭제 시 Patch 증가, 렌더링 오류가 콘솔에만 보임 등).
-3. key 기반 diff (목록 Patch 감소).
+2. RT-02/RT-03, EV-01 대응.
+3. key 기반 diff (RT-01, DF-02, AP-04).
 
 ## 9. 커밋 기록
 

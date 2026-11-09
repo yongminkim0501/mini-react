@@ -1,8 +1,8 @@
 # 리스크·이슈 목록
 
-작성일: 2026-11-06
+작성일: 2026-11-06 · Phase 2 항목 추가: 2026-11-09
 
-지금까지 구현한 모듈(`fromHtml`, `fromDom`, `createDom`/`mount`, `serialize`, `diff`, `applyPatches`)에서 깨지거나 문제가 예상되는 부분을 모은 목록이다. 항목별 상세는 모듈별 파일에 있다.
+지금까지 구현한 모듈(Phase 1: `fromHtml`, `fromDom`, `createDom`/`mount`, `serialize`, `diff`, `applyPatches`, 검증 페이지 · Phase 2: 이벤트 props, `h`, `resolve`, `FunctionComponent`, Hook, Todo 데모)에서 깨지거나 문제가 예상되는 부분을 모은 목록이다. 항목별 상세는 모듈별 파일에 있다.
 
 ## 표기
 
@@ -49,11 +49,22 @@
 | [DF-04](./diff.md#df-04) | diff | 중간 | 해결됨 (applyPatches) | 폼 요소 `value`/`checked`는 속성 변경만으로 화면에 반영 안 됨 |
 | [DF-05](./diff.md#df-05) | diff | 낮음 | 예상 | Patch가 VNode·프로토타입 없는 객체를 참조로 공유 |
 | [AP-01](./apply-patches.md#ap-01) | applyPatches | 중간 | 확인됨 | 사용자가 수정한 textarea는 TEXT Patch로 화면 값이 안 바뀜 |
-| [AP-02](./apply-patches.md#ap-02) | applyPatches | 중간 | 예상 | 적용 단계 중간 예외 시 반쯤 바뀐 화면이 남음 |
+| [AP-02](./apply-patches.md#ap-02) | applyPatches | 중간 | 해결됨 (컨트롤러·FunctionComponent 재마운트) | 적용 단계 중간 예외 시 반쯤 바뀐 화면이 남음 |
 | [AP-03](./apply-patches.md#ap-03) | applyPatches | 높음 | 기획 리스크 | 정규화 마운트 없이 호출하면 오동작 (종류 검사로 일부만 차단) |
 | [AP-04](./apply-patches.md#ap-04) | applyPatches | 중간 | 기획 리스크 | key 기반 diff 도입 시 CREATE를 중간에 넣을 anchor 필요 |
 | [AP-05](./apply-patches.md#ap-05) | applyPatches | 낮음 | 예상 | REPLACE/REMOVE 시 포커스·입력 상태 유실 |
-| [PJ-01](./project.md#pj-01) | 프로젝트 | 높음 | 예상 | 페이지 UI·State History·컨트롤러 미구현으로 Phase 1 흐름 미완성 |
+| [EV-01](./event-props.md#ev-01) | 이벤트 props | 중간 | 확인됨 | 제어 입력에서 상태가 그대로면 사용자 입력이 DOM에 남음 |
+| [EV-02](./event-props.md#ev-02) | 이벤트 props | 낮음 | 확인됨 | `onDoubleClick` 등 소문자화만으로 안 되는 이벤트 이름이 연결되지 않음 |
+| [EV-03](./event-props.md#ev-03) | 이벤트 props | 낮음 | 기획 리스크 | 렌더링마다 이벤트 함수 수만큼 PROPS Patch 발생 |
+| [RT-01](./runtime.md#rt-01) | 런타임 | 중간 | 확인됨 | 목록 중간 삭제 시 포커스·DOM 상태가 다른 항목으로 넘어감 |
+| [RT-02](./runtime.md#rt-02) | 런타임 | 중간 | 확인됨 | 렌더링 오류 후 상태 값과 화면이 어긋남 |
+| [RT-03](./runtime.md#rt-03) | 런타임 | 낮음 | 확인됨 | 무한 렌더링 중단 후 상태가 화면보다 앞서 있음 |
+| [RT-04](./runtime.md#rt-04) | 런타임 | 낮음 | 확인됨 | `h()` 목록의 key 중복을 경고하지 않음 |
+| [RT-05](./runtime.md#rt-05) | 런타임 | 낮음 | 기획 리스크 | 렌더링·Hook 규칙 오류가 콘솔에만 보임 |
+| [RT-06](./runtime.md#rt-06) | 런타임 | 낮음 | 기획 리스크 | `useEffect`가 반영 직후 동기 실행되어 화면 그리기를 막음 |
+| [RT-07](./runtime.md#rt-07) | 런타임 | 낮음 | 기획 리스크 | 매 렌더링 전체 트리를 새로 만들어 같은 객체 건너뛰기가 동작하지 않음 |
+| [RT-08](./runtime.md#rt-08) | 런타임 | 낮음 | 기획 리스크 | 자식 컴포넌트의 순수성은 강제할 수 없음 |
+| [PJ-01](./project.md#pj-01) | 프로젝트 | 높음 | 해결됨 (검증 페이지) | 페이지 UI·State History·컨트롤러 미구현으로 Phase 1 흐름 미완성 |
 | [PJ-02](./project.md#pj-02) | 프로젝트 | 낮음 | 예상 | 테스트가 jsdom 기반이라 실제 브라우저 동작과 다를 수 있음 |
 
 ## 우선 처리 권장
@@ -63,5 +74,8 @@
 3. **AP-01, AP-02**: textarea 동기화 한 줄 추가, 컨트롤러의 예외 시 재마운트 복구.
 4. **HV-02, CD-04**: 깊이 제한을 정하고 초과 시 `ok: false`로 처리한다.
 5. **HV-03**: 실제 영역과 테스트 영역의 화면이 달라 보이는 문제라 사용자가 바로 눈치챈다. 규칙 변경 여부를 결정해야 한다.
+6. **RT-02, RT-03**: `setState` 값을 렌더링 성공 시에만 확정하면 둘 다 해결된다.
+7. **EV-01**: 제어 입력 패턴(글자 수 제한 등)을 쓰려면 먼저 필요하다. 데모 범위에서는 드러나지 않는다.
+8. **RT-01**: key 기반 diff(AP-04, DF-02)와 함께 처리한다.
 
-해결된 항목(CD-01, CD-03, DF-01, DF-03, DF-04)은 기록을 위해 목록에 남겨 둔다.
+해결된 항목(CD-01, CD-03, DF-01, DF-03, DF-04, AP-02, PJ-01)은 기록을 위해 목록에 남겨 둔다.
