@@ -80,9 +80,10 @@ export class FunctionComponent<P extends object = Record<string, never>> impleme
     this.commit(patches, next);
   }
 
-  /** 컨테이너를 비우고 상태를 버린다. 이후 setState는 무시된다. */
+  /** effect 정리 함수를 모두 실행하고 컨테이너를 비운다. 이후 setState는 무시된다. */
   unmount(): void {
     if (!this.isMounted) return;
+    this.runCleanups();
     this.container.replaceChildren();
     this.hooks = [];
     this.hookCount = null;
@@ -138,8 +139,45 @@ export class FunctionComponent<P extends object = Record<string, never>> impleme
     this.flushEffects();
   }
 
-  /** 반영 후 effect 실행. 07 useEffect에서 구현한다. */
+  /**
+   * 반영 후 effect 실행. 등록 순서대로 이전 정리 함수 → effect → 새 정리 함수·deps 저장.
+   * effect 하나가 실패해도 나머지는 실행하고 오류는 콘솔에 출력한다.
+   * effect 안의 setState는 다음 렌더링을 예약한다.
+   */
   private flushEffects(): void {
+    const effects = this.pendingEffects;
     this.pendingEffects = [];
+    for (const { index, fn, deps } of effects) {
+      const slot = this.hooks[index];
+      // effect 도중 unmount되면 칸이 사라진다.
+      if (slot?.kind !== 'effect') continue;
+      runSafely(slot.cleanup, '정리 함수');
+      slot.cleanup = undefined;
+      try {
+        const result = fn();
+        slot.cleanup = typeof result === 'function' ? result : undefined;
+      } catch (error) {
+        console.error('[useEffect] effect 오류', error);
+      }
+      slot.deps = deps;
+    }
+  }
+
+  /** unmount용: 모든 effect 칸의 정리 함수를 실행한다. */
+  private runCleanups(): void {
+    for (const slot of this.hooks) {
+      if (slot.kind !== 'effect') continue;
+      runSafely(slot.cleanup, '정리 함수');
+      slot.cleanup = undefined;
+    }
+  }
+}
+
+function runSafely(fn: (() => void) | undefined, label: string): void {
+  if (!fn) return;
+  try {
+    fn();
+  } catch (error) {
+    console.error(`[useEffect] ${label} 오류`, error);
   }
 }
