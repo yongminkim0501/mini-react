@@ -222,4 +222,4 @@ setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
 | 6854bf2 / 227135c | useMemo 기획서 / 구현 |
 | 5323f7f / d362ea6 | Todo 데모 기획서 / 구현 |
 
-`feat/virtual-dom-vnode`는 `c64630b`까지 원격에 있다. `feat/phase2-components-hooks`는 아직 원격에 올리지 않았다.
+`feat/virtual-dom-vnode`는 `c64630b`까지(PR #2), `feat/phase2-components-hooks`는 최신 커밋까지 원격에 있다. Phase 2 리스크는 GitHub 이슈 #12~#20(마일스톤 Phase 2 구현, 프로젝트 보드 "Phase 2 구현" 뷰)으로 등록했다.
