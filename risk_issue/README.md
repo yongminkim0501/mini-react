@@ -78,4 +78,6 @@
 7. **EV-01**: 제어 입력 패턴(글자 수 제한 등)을 쓰려면 먼저 필요하다. 데모 범위에서는 드러나지 않는다.
 8. **RT-01**: key 기반 diff(AP-04, DF-02)와 함께 처리한다.
 
+Phase 2 항목(EV, RT)은 GitHub 마일스톤 [Phase 2 구현](https://github.com/yongminkim0501/mini-react/milestone/3)에 이슈 #12~#20으로 등록했다. RT-01은 기존 #10에 기록했다.
+
 해결된 항목(CD-01, CD-03, DF-01, DF-03, DF-04, AP-02, PJ-01)은 기록을 위해 목록에 남겨 둔다.
