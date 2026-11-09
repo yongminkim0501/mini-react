@@ -1,5 +1,4 @@
-const app = document.querySelector<HTMLDivElement>('#app');
+import { init } from './app/controller';
+import { getView } from './app/view';
 
-if (app) {
-  app.textContent = 'mini-react';
-}
+init(getView());
