@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini React · Phase 1 — Virtual DOM Lab</title>
+  <link rel="stylesheet" href="./src/lab/lab.css">
+</head>
+<body>
+  <header class="top">
+    <div class="title">
+      <h1>Virtual DOM Lab</h1>
+      <p>테스트 영역을 편집하고 <b>Patch</b> 를 누르면, 달라진 부분만 실제 영역에 반영됩니다.</p>
+    </div>
+
+    <div class="toolbar" role="toolbar" aria-label="Patch 와 히스토리">
+      <button id="btn-back" class="btn" type="button" disabled>← 뒤로</button>
+      <button id="btn-forward" class="btn" type="button" disabled>앞으로 →</button>
+      <button id="btn-patch" class="btn btn-primary" type="button">Patch<kbd>Ctrl ↵</kbd></button>
+      <span id="history-pos" class="pos" aria-live="polite">1 / 1</span>
+    </div>
+  </header>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  <main class="areas">
+    <section class="panel" aria-labelledby="real-title">
+      <header class="panel-head">
+        <h2 id="real-title">실제 영역</h2>
+        <span class="tag">diff + patch 로만 변경</span>
+      </header>
+      <div class="panel-body">
+        <!-- 샘플 HTML: 로드 시 Virtual DOM 으로 변환된다 (들여쓰기 공백은 변환 과정에서 정리됨) -->
+        <div id="real-root" class="stage">
+          <div class="card" id="profile">
+            <h2>미니 리액트 연구소</h2>
+            <p class="desc">Virtual DOM 을 <b>직접</b> 만들어 봅니다. <i>Diff</i> 와 <i>Patch</i> 도요.</p>
+            <ul class="todo">
+              <li key="a">Virtual DOM 변환</li>
+              <li key="b">Diff 알고리즘</li>
+              <li key="c">Patch</li>
+            </ul>
+            <label class="field">이름 <input type="text" value="정글" placeholder="이름을 입력하세요"></label>
+            <label class="field"><input type="checkbox" checked> 약관에 동의합니다</label>
+            <button class="submit" type="button" disabled>제출</button>
+            <table>
+              <thead><tr><th>단계</th><th>핵심</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Virtual DOM</td></tr>
+                <tr><td>2</td><td>Hooks</td></tr>
+              </tbody>
+            </table>
+            <a href="https://react.dev" target="_blank" rel="noreferrer">React 공식 문서</a>
+          </div>
+        </div>
+        <p class="hint">입력창에 글자를 쳐 둔 채로 Patch 해 보세요. 입력값이 사라지지 않으면 전체를 다시 그린 게 아닙니다.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="test-title">
+      <header class="panel-head">
+        <h2 id="test-title">테스트 영역</h2>
+        <span id="pending" class="tag tag-pending" data-dirty="false" aria-live="polite">변경 없음</span>
+      </header>
+      <div class="panel-body">
+        <div id="test-root" class="stage editable" contenteditable="true" spellcheck="false" aria-label="테스트 영역 (직접 편집 가능)"></div>
+        <p class="hint">여기를 직접 고치거나, 아래 <b>편집 도구</b>를 사용하세요.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 테스트 영역을 고치는 데 쓰는 도구들. 영역 안이 아니라 밖에 둔다. -->
+  <section class="panel wide" aria-labelledby="tools-title">
+    <header class="panel-head">
+      <h2 id="tools-title">편집 도구</h2>
+      <span class="tag">테스트 영역을 수정합니다</span>
+    </header>
+    <div class="panel-body">
+      <div class="scenarios" role="group" aria-label="예시 수정">
+        <span class="scenarios-label">예시 수정</span>
+        <button type="button" class="chip" data-scenario="text">텍스트 변경</button>
+        <button type="button" class="chip" data-scenario="props">속성 변경</button>
+        <button type="button" class="chip" data-scenario="replace">태그 교체</button>
+        <button type="button" class="chip" data-scenario="add">항목 추가</button>
+        <button type="button" class="chip" data-scenario="remove">항목 삭제</button>
+        <button type="button" class="chip" data-scenario="reorder">항목 순서 변경</button>
+      </div>
+      <p class="hint">버튼을 누르면 테스트 영역이 수정됩니다. 그다음 <b>Patch</b> 를 눌러 실제 영역에 반영하세요. 항목은 할 일 목록 기준입니다.</p>
+
+      <label class="source-label" for="source">HTML 코드 <small>(여기서 고쳐도 테스트 영역에 반영됩니다)</small></label>
+      <textarea id="source" class="source" spellcheck="false" rows="9"></textarea>
+    </div>
+  </section>
+
+  <!-- 이전 VDOM 과 새 VDOM 을 나란히 놓고 달라진 줄을 표시한다 -->
+  <section class="panel wide" aria-labelledby="compare-title">
+    <header class="panel-head">
+      <h2 id="compare-title">VDOM 비교</h2>
+      <span id="compare-summary" class="tag">—</span>
+    </header>
+    <div class="panel-body">
+      <p class="legend">
+        <span class="legend-item"><i class="swatch swatch-del">−</i>이전에만 있음</span>
+        <span class="legend-item"><i class="swatch swatch-add">+</i>새로 생김</span>
+        <span id="compare-label" class="legend-label"></span>
+      </p>
+      <div id="compare-grid" class="compare-grid" role="table" aria-label="이전 VDOM 과 새 VDOM 비교"></div>
+    </div>
+  </section>
+
+  <section class="insights">
+    <article class="panel">
+      <header class="panel-head"><h2>Diff 결과</h2><span id="diff-summary" class="tag">—</span></header>
+      <ol id="diff-list" class="diff-list"><li class="empty">아직 Patch 하지 않았습니다.</li></ol>
+    </article>
+
+    <article class="panel">
+      <header class="panel-head"><h2>State History</h2></header>
+      <ol id="history-list" class="history-list"></ol>
+    </article>
+
+    <article class="panel">
+      <header class="panel-head"><h2>Virtual DOM</h2><span class="tag">현재 상태</span></header>
+      <pre id="vdom-json" class="json"></pre>
+    </article>
+  </section>
+
+  <script type="module" src="./src/lab/main.js"></script>
+</body>
+</html>
