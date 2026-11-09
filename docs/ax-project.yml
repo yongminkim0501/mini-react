@@ -1,6 +1,6 @@
 # 사람이 셋업 리뷰에서 확정합니다. null은 미정이며 0이 아닙니다.
-template_version: '0.1'
-instructions_version: '0.1'
+template_version: '0.2'
+instructions_version: '0.2'
 plan_date: '2026-11-09'
 repository: yongminkim0501/mini-react
 milestone:
