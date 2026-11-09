@@ -12,11 +12,12 @@
 
 ## AP-02
 
-**적용 단계 중간 예외 시 반쯤 바뀐 화면** · 중간 · 예상
+**적용 단계 중간 예외 시 반쯤 바뀐 화면** · 중간 · 예상 → 해결됨
 
 - **현상:** 찾기 단계는 모두 성공했는데 적용 단계에서 예외가 나면 앞의 Patch만 반영된 채 멈춘다. 예: 구형 브라우저의 `setAttribute` 속성 이름 검사(CD-05). `file` 입력의 `value`는 건너뛰도록 막아 두었다.
 - **영향:** "반쯤 바뀐 화면이 남지 않는다"는 기획서 1단계의 보장이 적용 단계에는 없다.
 - **대응안:** 컨트롤러가 `applyPatches`를 `try/catch`로 감싸고, 예외 시 기획서 9장 현재 안대로 새 VNode로 다시 `mount`해 복구한다.
+- **해결:** 검증 페이지 컨트롤러(`src/app/controller.ts`)와 `FunctionComponent.update()`가 `applyPatches`를 `try/catch`로 감싸고, `ok: false`나 예외면 새 VNode로 다시 `mount`한다.
 
 ## AP-03
 
