@@ -30,15 +30,15 @@ cost:
 
 pull_requests:
   ax:
-    head: feat/agent-ax-issue-ym
-    base: feat/virtual-dom-vnode
-    scope: AX 협업 셋업 변경만
-    number: 3
-  mini_react:
-    head: feat/virtual-dom-vnode
+    head: feat/ax-standalone
     base: develop
-    scope: 기존 mini-react 구현 커밋 22개
-    number: 2
+    scope: 애플리케이션과 독립된 AX 전체
+    number: 27
+  mini_react:
+    head: feat/phase1-ym-review
+    base: develop
+    scope: 사용자 Phase 1 원본 스냅샷 독립 리뷰
+    number: 28
 
 initial_issues:
   - number: 4
