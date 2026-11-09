@@ -85,3 +85,39 @@ export function setRenderingChild(value: boolean): boolean {
   isRenderingChild = value;
   return previous;
 }
+
+export const HOOK_OUTSIDE_RENDER = 'Hook은 컴포넌트 렌더링 중에만 호출할 수 있습니다';
+export const HOOK_IN_CHILD = 'Hook은 루트 컴포넌트에서만 사용할 수 있습니다';
+
+export interface SlotHandle<K extends HookKind> {
+  readonly component: HookHost;
+  readonly index: number;
+  /** 첫 렌더링이면 undefined. 각 Hook이 칸을 만들어 component.hooks[index]에 넣는다. */
+  readonly slot: Extract<HookSlot, { kind: K }> | undefined;
+}
+
+/**
+ * Hook이 자기 칸을 받는다. Hook은 이름이 아니라 호출 순서로 칸을 찾으므로
+ * 매 렌더링 같은 순서·같은 개수로 불러야 한다. 칸 종류가 다르면 순서가 바뀐 것이다.
+ */
+export function useHookSlot<K extends HookKind>(kind: K): SlotHandle<K> {
+  if (!currentComponent) throw new Error(HOOK_OUTSIDE_RENDER);
+  if (isRenderingChild) throw new Error(HOOK_IN_CHILD);
+
+  const index = hookIndex++;
+  const slot = currentComponent.hooks[index];
+  if (slot && slot.kind !== kind) {
+    throw new Error(`Hook 호출 순서가 바뀌었습니다: ${index}번 칸은 ${slot.kind}인데 ${kind}로 호출했습니다`);
+  }
+  return { component: currentComponent, index, slot: slot as Extract<HookSlot, { kind: K }> | undefined };
+}
+
+/**
+ * useEffect, useMemo가 함께 쓰는 의존성 비교.
+ * next가 없으면 매번 바뀐 것으로 본다. NaN도 같게 보도록 ===가 아니라 Object.is로 비교한다.
+ */
+export function depsChanged(prev: readonly unknown[] | undefined, next: readonly unknown[] | undefined): boolean {
+  if (next === undefined || prev === undefined) return true;
+  if (prev.length !== next.length) return true;
+  return next.some((value, i) => !Object.is(value, prev[i]));
+}
