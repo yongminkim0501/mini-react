@@ -1,0 +1,17 @@
+{
+  "name": "mini-react",
+  "version": "0.1.0",
+  "description": "Vanilla JS로 구현한 미니 리액트 (Virtual DOM · Diff · Patch · Hooks)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
