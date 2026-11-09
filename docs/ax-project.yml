@@ -1,0 +1,39 @@
+# 사람이 셋업 리뷰에서 확정합니다. null은 미정이며 0이 아닙니다.
+template_version: '0.1'
+instructions_version: '0.1'
+plan_date: '2026-11-09'
+repository: yongminkim0501/mini-react
+milestone:
+  number: null
+  title: AX 협업 셋업·운영 검증 (11/9)
+  due_on: '2026-11-09T14:59:59Z' # 한국 시간 11/9 23:59:59
+  scope: AX 협업 셋업 파일 검토·반영과 운영 절차 검증. mini-react 구현은 별도 PR.
+project:
+  started_at: '2026-11-09T00:00:00+09:00' # 시작일 경계; 실제 착수 시각은 별도 기록
+  ended_at: '2026-11-09T23:59:59+09:00' # 계획 마감; 실제 종료 시각은 별도 기록
+  developer_count: 1
+  agent_count: null
+  development_kind: null # 신규 개발 / 유지보수 / 혼합
+people:
+  coordinator: yongminkim0501
+  developers: [yongminkim0501]
+  author: yongminkim0501
+  operations_verifier: yongminkim0501
+  reviewer: null # 작성자와 다른 사람. 단독 셋업에서는 미정으로 유지
+schedule:
+  daily_sync: null
+  checkpoints: [] # 3·6·9일차의 실제 날짜·시각
+cost:
+  recording_method: null
+  currency: null
+  total: null
+
+pull_requests:
+  ax:
+    head: feat/agent-ax-issue-ym
+    base: feat/virtual-dom-vnode
+    scope: AX 협업 셋업 변경만
+  mini_react:
+    head: feat/virtual-dom-vnode
+    base: develop
+    scope: 기존 mini-react 구현 커밋 22개
