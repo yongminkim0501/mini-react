@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+.vite/
+
+# AX skills: edit skills/ originals and regenerate locally.
+.agents/skills/ax-*/
+.claude/skills/ax-*/
