@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "sources": {"issue-ym": "yongminkim0501"},
-  "areas": ["html-to-vnode", "vnode-to-dom", "vnode-to-html", "diff", "patch", "state", "app", "shared", "unknown"],
-  "project": {"owner": "yongminkim0501", "number": 13},
-  "maxFiles": 100,
-  "maxNewIssues": 10
-}
