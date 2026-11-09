@@ -1,10 +1,6 @@
-import type { VText } from '../core/html-to-vnode';
+import type { PropValue, VText } from '../core/html-to-vnode';
 
-/** DOM 이벤트 처리 함수. props 이름이 on으로 시작할 때만 허용한다. */
-export type EventHandler = (event: Event) => void;
-
-/** 요소 props 값: 속성 문자열 또는 이벤트 함수. */
-export type PropValue = string | EventHandler;
+export type { EventHandler, PropValue } from '../core/html-to-vnode';
 
 export type ElementProps = Readonly<Record<string, PropValue>>;
 

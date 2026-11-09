@@ -4,6 +4,11 @@ import {
   SVG_NAMESPACE,
   childNamespace,
   createDom,
+  isEventProp,
+  isEventPropName,
+  removeEvent,
+  setEvent,
+  toEventType,
 } from '../vnode-to-dom';
 import type { Namespace } from '../vnode-to-dom';
 import { syncFormProp } from './formProps';
@@ -55,12 +60,21 @@ export function commit({ patch, target }: ResolvedPatch): Element | null {
     case 'PROPS': {
       const element = target as Element;
       for (const [name, value] of Object.entries(patch.set)) {
-        element.setAttribute(name, value);
-        syncFormProp(element, name, value);
+        // 이벤트는 표의 함수만 바꾼다. addEventListener는 종류마다 처음 한 번만 한다.
+        if (isEventProp(name, value)) {
+          setEvent(element, toEventType(name), value);
+        } else if (typeof value === 'string') {
+          element.setAttribute(name, value);
+          syncFormProp(element, name, value);
+        }
       }
       for (const name of patch.remove) {
-        element.removeAttribute(name);
-        syncFormProp(element, name, null);
+        if (isEventPropName(name)) {
+          removeEvent(element, toEventType(name));
+        } else {
+          element.removeAttribute(name);
+          syncFormProp(element, name, null);
+        }
       }
       return element;
     }

@@ -1,5 +1,5 @@
 import type { Patch, Path } from '../core/diff';
-import type { VNode } from '../core/html-to-vnode';
+import type { PropValue, VNode } from '../core/html-to-vnode';
 import { escapeAttr } from '../core/vnode-to-html';
 import type { View } from './view';
 
@@ -7,11 +7,16 @@ function formatPath(path: Path): string {
   return `[${path.join(',')}]`;
 }
 
+/** 속성은 name="값", 이벤트 함수는 name=ƒ로 표시한다. */
+function formatProp(name: string, value: PropValue): string {
+  return typeof value === 'string' ? `${name}="${escapeAttr(value)}"` : `${name}=ƒ`;
+}
+
 /** 새로 만들 노드를 짧게 표시한다. 요소는 여는 태그, 텍스트는 따옴표로 감싼 내용. */
 function describeNode(node: VNode): string {
   if (node.kind === 'text') return JSON.stringify(node.text);
   const attrs = Object.entries(node.props)
-    .map(([name, value]) => ` ${name}="${escapeAttr(value)}"`)
+    .map(([name, value]) => ` ${formatProp(name, value)}`)
     .join('');
   return `<${node.tag}${attrs}>`;
 }
@@ -20,7 +25,7 @@ function describeNode(node: VNode): string {
 export function formatPatch(patch: Patch): string {
   switch (patch.type) {
     case 'PROPS': {
-      const set = Object.entries(patch.set).map(([name, value]) => `${name}="${escapeAttr(value)}"`);
+      const set = Object.entries(patch.set).map(([name, value]) => formatProp(name, value));
       const remove = patch.remove.map((name) => `-${name}`);
       return `PROPS ${formatPath(patch.path)} ${[...set, ...remove].join(' ')}`;
     }

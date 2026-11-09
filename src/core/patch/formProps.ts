@@ -7,7 +7,9 @@ export function syncFormProp(element: Element, name: string, value: string | nul
   if (name === 'value' && element instanceof HTMLInputElement) {
     // file 입력은 빈 문자열 외의 값을 넣으면 InvalidStateError가 난다.
     if (element.type === 'file') return;
-    element.value = value ?? '';
+    // 같은 값을 다시 넣으면 일부 브라우저에서 커서가 끝으로 튄다. 다를 때만 넣는다.
+    const next = value ?? '';
+    if (element.value !== next) element.value = next;
   } else if (name === 'checked' && element instanceof HTMLInputElement) {
     element.checked = value !== null;
   } else if (name === 'selected' && element instanceof HTMLOptionElement) {

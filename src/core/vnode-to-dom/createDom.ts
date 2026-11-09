@@ -1,5 +1,6 @@
 import { ROOT_TAG } from '../html-to-vnode';
 import type { VElement, VNode, VText } from '../html-to-vnode';
+import { isEventProp, setEvent, toEventType } from './events';
 import { HTML_NAMESPACE, childNamespace, elementNamespace } from './namespace';
 import type { Namespace } from './namespace';
 
@@ -30,7 +31,9 @@ export function createDom(vnode: VNode, namespace: Namespace = HTML_NAMESPACE): 
 
   // key는 props['data-key']에 이미 들어 있으므로 따로 출력하지 않는다.
   for (const [name, value] of Object.entries(vnode.props)) {
-    element.setAttribute(name, value);
+    // 이벤트 함수는 속성이 아니라 이벤트 표에 넣는다 (Phase 2).
+    if (isEventProp(name, value)) setEvent(element, toEventType(name), value);
+    else if (typeof value === 'string') element.setAttribute(name, value);
   }
 
   appendChildren(element, vnode.children, childNamespace(namespace, vnode.tag));
