@@ -1,5 +1,5 @@
 import { ROOT_TAG } from '../html-to-vnode';
-import type { VElement, VNode } from '../html-to-vnode';
+import type { PropValue, VElement, VNode } from '../html-to-vnode';
 import { escapeAttr, escapeText } from './escape';
 import { isInlineLayout, isPreserve, isVoid } from './rules';
 
@@ -46,9 +46,11 @@ function serializeChildren(element: VElement, depth: number, inline: boolean): s
   return `\n${lines.join('\n')}\n${INDENT.repeat(depth)}`;
 }
 
-function serializeAttrs(props: Readonly<Record<string, string>>): string {
+function serializeAttrs(props: Readonly<Record<string, PropValue>>): string {
   let result = '';
   for (const [name, value] of Object.entries(props)) {
+    // 이벤트 함수는 HTML로 나타낼 수 없으므로 출력하지 않는다.
+    if (typeof value !== 'string') continue;
     result += value === '' ? ` ${name}` : ` ${name}="${escapeAttr(value)}"`;
   }
   return result;

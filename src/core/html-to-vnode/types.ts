@@ -5,11 +5,17 @@ export interface VText {
   readonly text: string;
 }
 
+/** DOM 이벤트 처리 함수. props 이름이 on으로 시작할 때만 들어간다 (Phase 2 h()). */
+export type EventHandler = (event: Event) => void;
+
+/** 요소 props 값. fromHtml/fromDom은 문자열만 만들고, h()는 이벤트 함수도 넣는다. */
+export type PropValue = string | EventHandler;
+
 export interface VElement {
   readonly kind: 'element';
   /** localName 그대로. 루트는 ROOT_TAG. */
   readonly tag: string;
-  readonly props: Readonly<Record<string, string>>;
+  readonly props: Readonly<Record<string, PropValue>>;
   readonly children: readonly VNode[];
   /** data-key 값. 없으면 필드 자체를 생략한다. */
   readonly key?: string;
