@@ -1,4 +1,4 @@
-version: '0.1'
+version: '0.2'
 areas:
   html-to-vnode:
     paths:
@@ -35,6 +35,7 @@ areas:
     paths:
     - .github/**
     - scripts/**
+    - issue-*/**
     - skills/**
     - .agents/**
     - .claude/**

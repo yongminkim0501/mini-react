@@ -41,3 +41,5 @@ create area:state c5def5 '예상 또는 실제 변경 영역: state'
 create area:app c5def5 '예상 또는 실제 변경 영역: app'
 create area:shared c5def5 '예상 또는 실제 변경 영역: shared'
 create area:unknown ededed '영역 미확인; 일일 동기화에서 확정'
+
+create ax:intake 5319e7 '개인별 입력 디렉터리에서 자동 등록된 이슈·AI 조정 이슈'
