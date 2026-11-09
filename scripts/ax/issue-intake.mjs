@@ -11,9 +11,13 @@ const LOGIN = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
 const SOURCE = /<!-- ax-intake:v1:([a-f0-9]{64}):([a-f0-9]{64}):([a-z\d-]+) -->/i;
 const COMMENT = key => `<!-- ax-triage:v1:${key} -->`;
 const GROUP = key => `<!-- ax-coordination:v1:${key} -->`;
-const plain = value => String(value).replace(/https?:\/\/\S+/g, '[외부 링크 생략]')
-  .replace(/@/g, '＠').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
-  .replace(/[\\`*_\[\]{}()#!|]/g, '\\$&');
+const hasControl = value => [...value].some(char => char.codePointAt(0) < 32);
+function plain(value) {
+  const safe = String(value).replace(/https?:\/\/\S+/g, '[외부 링크 생략]')
+    .replace(/@/g, '＠').replace(/[&<>]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[char]));
+  const escaped = new Set(['\\','`','*','_','[',']','{','}','(',')','#','!','|']);
+  return [...safe].map(char => escaped.has(char) ? '\\'+char : char).join('');
+}
 
 export class GitHub {
   constructor(repo, token, fetcher = fetch) {
@@ -58,7 +62,7 @@ export class GitHub {
 
 export function parseIssue(text, path, config) {
   const dir = path.split('/')[0], owner = config.sources[dir];
-  if (!owner || !LOGIN.test(owner) || !/^[^\x00-\x1f]+\.md$/.test(path)
+  if (!owner || !LOGIN.test(owner) || (hasControl(path) || !path.endsWith('.md'))
       || path.split('/').some(p => p === '..' || p === '.')) throw Error('Invalid source path');
   if (Buffer.byteLength(text) > 24000) throw Error(`${path}: file exceeds 24 KB`);
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]+)$/.exec(text);
@@ -69,7 +73,7 @@ export function parseIssue(text, path, config) {
   const allowed = ['id','title','type','severity','areas','milestone'];
   if (!meta || Array.isArray(meta) || Object.keys(meta).some(k => !allowed.includes(k))) throw Error('Unknown metadata field');
   if (!/^[a-z0-9][a-z0-9-]{2,79}$/.test(meta.id ?? '')) throw Error('Invalid immutable id');
-  if (typeof meta.title !== 'string' || !meta.title.trim() || meta.title.length > 200 || /[\r\n\x00]/.test(meta.title)) throw Error('Invalid title');
+  if (typeof meta.title !== 'string' || !meta.title.trim() || meta.title.length > 200 || hasControl(meta.title)) throw Error('Invalid title');
   if (!TYPES.includes(meta.type)) throw Error('Invalid type');
   if (!Array.isArray(meta.areas) || !meta.areas.length || meta.areas.some(a => !config.areas.includes(a))) throw Error('Invalid areas');
   if (!Number.isSafeInteger(meta.milestone) || meta.milestone < 1) throw Error('Milestone number required');

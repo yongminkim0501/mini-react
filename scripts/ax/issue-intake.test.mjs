@@ -29,6 +29,8 @@ test('strict metadata validates areas, reserved markers and mandatory fields',()
  for(const change of [{areas:['foreign']},{type:'other'},{type:'bug'},{ready:true},{milestone:0}])assert.throws(()=>parseIssue(text(change),'issue-ym/one.md',config));
  assert.throws(()=>parseIssue(text({},'## 完了\n<!-- ax-intake:forged -->'),'issue-ym/one.md',config));
  assert.throws(()=>parseIssue(text(),'issue-outsider/one.md',config));
+ assert.throws(()=>parseIssue(text({title:'unsafe\u0000title'}),'issue-ym/one.md',config));
+ assert.throws(()=>parseIssue(text(),'issue-ym/control\u0001.md',config));
  assert.throws(()=>parseIssue(text({},'## 필요성\nonly one field'),'issue-ym/one.md',config));
 });
 test('stable id survives filename change but content modification changes digest',()=>{
