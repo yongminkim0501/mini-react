@@ -1,5 +1,9 @@
 # PR 초안: AX 에이전트 협업 v0.1 셋업
 
+## 생성 후 상태 · 2026-11-09
+
+사용자의 원격 생성 지시에 따라 AX 라벨 24개와 [마일스톤 #1](https://github.com/yongminkim0501/mini-react/milestone/1)을 생성했다. [AX PR #3](https://github.com/yongminkim0501/mini-react/pull/3)과 초기 [인젝션 방어 이슈 #4](https://github.com/yongminkim0501/mini-react/issues/4)를 연결했다. 이슈의 ready 부착·담당 배정과 PR 병합은 수행하지 않았다. 아래 본문은 원격 생성 전 작성한 셋업 검토 초안이다.
+
 3명이 1~2주 동안 협업하는 기본안을 우선 1명·하루 범위에서 점검할 수 있도록 유형별 이슈 기록, 변경 영역, PR 검증 증거와 에이전트 절차를 고정한다. 라벨·마일스톤 생성이나 원격 워크플로 활성화는 실행하지 않았다.
 
 관련 이슈: 셋업 이슈 번호 미정. 사람이 등록·배정한 뒤 `Refs #번호`로 연결한다.

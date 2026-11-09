@@ -4,9 +4,9 @@ instructions_version: '0.1'
 plan_date: '2026-11-09'
 repository: yongminkim0501/mini-react
 milestone:
-  number: null
+  number: 1
   title: AX 협업 셋업·운영 검증 (11/9)
-  due_on: '2026-11-09T14:59:59Z' # 한국 시간 11/9 23:59:59
+  due_on: '2026-11-09T00:00:00Z' # GitHub가 반환한 마감 날짜. 운영 마감은 아래 한국 시간 기준.
   scope: AX 협업 셋업 파일 검토·반영과 운영 절차 검증. mini-react 구현은 별도 PR.
 project:
   started_at: '2026-11-09T00:00:00+09:00' # 시작일 경계; 실제 착수 시각은 별도 기록
@@ -33,7 +33,13 @@ pull_requests:
     head: feat/agent-ax-issue-ym
     base: feat/virtual-dom-vnode
     scope: AX 협업 셋업 변경만
+    number: 3
   mini_react:
     head: feat/virtual-dom-vnode
     base: develop
     scope: 기존 mini-react 구현 커밋 22개
+    number: 2
+
+initial_issues:
+  - number: 4
+    title: 이슈 본문을 통한 프롬프트 인젝션 방어 기준과 검증 마련
