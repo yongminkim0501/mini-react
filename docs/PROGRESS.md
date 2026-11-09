@@ -1,6 +1,6 @@
 # 진행 현황
 
-최종 갱신: 2026-11-09 · 브랜치: `feat/virtual-dom-vnode`
+최종 갱신: 2026-11-09 · 브랜치: `feat/phase2-components-hooks` (`feat/virtual-dom-vnode`에서 분기, PR #2 병합 전)
 
 모듈을 추가하거나 상태가 바뀔 때마다 이 문서를 함께 갱신한다. 모듈별 상세 설계는 각 기획서(`docs/*.md`), 알려진 문제는 [`risk_issue/README.md`](../risk_issue/README.md)를 본다.
 
@@ -9,8 +9,8 @@
 | 단계 | 내용 | 상태 |
 |------|------|------|
 | Phase 1 | Virtual DOM 변환, Diff, Patch, State History | 핵심 모듈 완료 |
-| Phase 1 | 화면(실제 영역, 테스트 영역, Patch/뒤로가기/앞으로가기 버튼) | 완료 (실제 브라우저 확인 남음) |
-| Phase 2 | 함수형 컴포넌트, state, hooks (`useState`, `useEffect`, `useMemo`) | 미착수 |
+| Phase 1 | 화면(실제 영역, 테스트 영역, Patch/뒤로가기/앞으로가기 버튼) | 완료 (Chrome 확인, PR #2) |
+| Phase 2 | 함수형 컴포넌트, state, hooks (`useState`, `useEffect`, `useMemo`), Todo 데모 | 완료 (Chrome 확인) |
 
 제약: 바닐라 JS/TS만 사용하고 상용 프레임워크는 쓰지 않는다. Vite, Vitest, jsdom, TypeScript는 개발 도구로만 쓴다.
 
@@ -31,6 +31,14 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 
 뒤로가기/앞으로가기: `history.back()`/`forward()`로 받은 VNode와 현재 VNode를 `diff` → `applyPatches`(실패 시 `mount`) → 테스트 영역에 `serialize` 결과를 넣는다.
 
+Phase 2 렌더링 1회 (`src/runtime/FunctionComponent.ts`):
+
+```
+setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
+  └─ render: beginRender → fn(props) → resolve(자식 컴포넌트 펼치기) → endRender → Hook 개수 확인
+  └─ diff(이전 vnode, 새 vnode) → applyPatches (실패 시 mount) → onCommit → flushEffects
+```
+
 ## 3. 모듈 현황
 
 | 모듈 | 경로 | 기획서 | 공개 API | 상태 | 커밋 |
@@ -43,7 +51,15 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 | Patch 적용 | `src/core/patch/` | [apply-patches.md](./apply-patches.md) | `applyPatches`, `resolvePath`, `syncFormProp` | 완료 | 1dff63d, 1e07a68 |
 | State History | `src/state/history.ts` | [state-history.md](./state-history.md) | `StateHistory` (`push`, `back`, `forward`, `current`, `canBack`, `canForward`, `position`) | 완료 | b05f2c3, 36f9c24 |
 | 검증 페이지 | `index.html`, `styles.css`, `src/app/` | [page.md](./page.md) | `init`, `getView`, `formatPatch`, `highlight` | 완료 | 4bb728b, ae205f6 |
-| 컴포넌트·hooks | - | 미작성 | - | 미착수 | - |
+| h() | `src/runtime/h.ts`, `normalize.ts`, `types.ts` | [phase2-01-h.md](./phase2-01-h.md) | `h` | 완료 | 4fb26e7, 6565504 |
+| 이벤트 props | `src/core/vnode-to-dom/events.ts` (+ createDom, commit, formProps, serialize) | [phase2-02-event-props.md](./phase2-02-event-props.md) | `setEvent`, `removeEvent`, `isEventProp` | 완료 | c69b87b, d2e4988 |
+| resolve | `src/runtime/resolve.ts` | [phase2-03-resolve.md](./phase2-03-resolve.md) | `resolve`, `resolveNode` | 완료 | db204ff, 5061786 |
+| FunctionComponent | `src/runtime/FunctionComponent.ts` | [phase2-04-function-component.md](./phase2-04-function-component.md) | `mount`, `update`, `unmount`, `onCommit` | 완료 | c003384, ec781ec |
+| Hook 실행 환경 | `src/runtime/hookRuntime.ts` | [phase2-05-hook-runtime.md](./phase2-05-hook-runtime.md) | `useHookSlot`, `depsChanged` | 완료 | bddd495, 092084c |
+| useState | `src/runtime/hooks/useState.ts`, `scheduler.ts` | [phase2-06-use-state.md](./phase2-06-use-state.md) | `useState` | 완료 | 48edc25, b8a5e32 |
+| useEffect | `src/runtime/hooks/useEffect.ts` | [phase2-07-use-effect.md](./phase2-07-use-effect.md) | `useEffect` | 완료 | a093a2c, 4523008 |
+| useMemo | `src/runtime/hooks/useMemo.ts`, `src/runtime/index.ts` | [phase2-08-use-memo.md](./phase2-08-use-memo.md) | `useMemo` | 완료 | 6854bf2, 227135c |
+| Todo 데모 | `phase2/` | [phase2-09-demo-page.md](./phase2-09-demo-page.md) | `App`, `createDebugPanel` | 완료 | 5323f7f, d362ea6 |
 
 ## 4. 모듈별 요약
 
@@ -97,8 +113,27 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 - `applyPatches`가 `ok: false`이거나 예외를 던지면 `mount`로 다시 그리고 경고를 띄운다 (AP-02, AP-03 대응).
 - 하이라이트는 `Element.animate`라 DOM 속성을 바꾸지 않는다. 단축키는 넣지 않았다(한글 조합 리스크 회피).
 
+### Phase 2 런타임
 
-`npm run test:run` 기준 13개 파일, 168개 통과. `npm run build` 성공. `npm run typecheck` 오류 없음.
+- `h(type, props, ...children)`: children은 펼치고 null·불리언·빈 문자열은 버리며 인접 텍스트를 합친다. 요소 key는 `data-key`에도 넣는다. 함수 props는 `on*`일 때만 남긴다.
+- 이벤트: 요소마다 WeakMap 이벤트 표를 두고 종류별 리스너는 1회만 등록한다. 렌더링마다 표의 함수만 바꾼다. `value`는 다를 때만 property에 넣어 커서를 지킨다.
+- `resolve`: 자식 컴포넌트를 동결된 props로 실행하고 결과를 펼친다. 단일 요소 결과에 key를 옮긴다. 중첩 1000단계 초과 시 오류.
+- `FunctionComponent`: 렌더링 오류면 이전 화면 유지 + 콘솔. Hook 개수가 바뀌면 오류. 실패한 렌더링의 새 칸·effect는 버린다.
+- Hook 규칙 위반(렌더링 밖, 자식 컴포넌트, 순서 변경)은 오류. `depsChanged`는 `Object.is` 비교.
+- `useState`: setState는 칸마다 1개, 같은 값이면 무시, 렌더링 중 호출은 오류, unmount 후 무시. 업데이트는 `queueMicrotask`로 묶는다.
+- `useEffect`: 반영 직후 동기 실행(`useLayoutEffect` 시점). 정리 → 실행 → deps 저장. 연속 100회 넘는 업데이트는 중단.
+- `useMemo`: 렌더링 중 계산, deps 같으면 이전 값.
+
+### Todo 데모 (`/phase2/`)
+
+- App에 Hook 7개(state 3, memo 2, effect 2), 자식 6개는 props만 받는다.
+- 추가: 버튼 또는 Enter(한글 조합 중 Enter 무시). id는 현재 최대 id + 1.
+- 디버그 패널: 렌더링 횟수, Hook 칸(memo ⟳ 재계산, effect ▶ 실행 표시), 마지막 Patch(이벤트 교체는 건수로 묶음).
+
+## 5. 테스트
+
+
+`npm run test:run` 기준 22개 파일, 260개 통과. `npm run build`(두 페이지) 성공. `npm run typecheck` 오류 없음.
 
 | 파일 | 내용 |
 |------|------|
@@ -114,6 +149,15 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 | `patch/applyPatches.test.ts` | 변경 기록 검증, 실패 시 무변경, SVG, 폼, 왕복 10종, 연속 적용 |
 | `state/history.test.ts` | 기획서 7장 순서, 빈 기록, 참조 동일성, 동결, push 100회 |
 | `app/controller.test.ts` | `index.html`을 올려 9장 시나리오 1~9, MutationObserver 4건, 실패 시 재마운트, 로그 형식 |
+| `vnode-to-dom/events.test.ts` | 이벤트 등록 1회, 함수 교체·삭제, 커서 유지, serialize 제외 |
+| `runtime/h.test.ts` | h 기획서 6·7장, 정리 경계 |
+| `runtime/resolve.test.ts` | 펼치기, key 이어받기, 텍스트 병합, 동결, 깊이 한도 |
+| `runtime/FunctionComponent.test.ts` | mount/update/unmount, 오류 시 화면 유지, 재마운트 복구 |
+| `runtime/hookRuntime.test.ts` | depsChanged 표, Hook 규칙 오류, 컨텍스트 복구, 인스턴스 분리 |
+| `runtime/hooks/useState.test.ts` | Counter, 묶음 렌더링, 함수형 업데이트, 렌더링 중·unmount 후 |
+| `runtime/hooks/useEffect.test.ts` | 실행 순서, 정리, 오류 격리, 무한 렌더링 중단, 실패 렌더링 |
+| `runtime/hooks/useMemo.test.ts` | 재계산 조건, 같은 객체 반환, 세 Hook 칸 |
+| `phase2/src/App.test.ts` | 데모 시나리오 1~8, Hook 7칸, DOM 재사용, 디버그 패널 |
 | `setup.test.ts` | jsdom 동작 확인 |
 
 ## 6. 주요 결정
@@ -126,6 +170,8 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 - State History는 저장 개수를 제한하지 않는다. Patch가 빈 배열이면 저장하지 않는다(컨트롤러).
 - 테스트 영역을 수정만 하고 뒤로가기를 누르면 `confirm`으로 묻는다.
 - 검증 페이지는 TS + Vite로 빌드한다(JSDoc 방식 아님). Patch 후 테스트 영역은 정리된 코드로 덮어쓴다.
+- Phase 2 기획서 결정 항목은 현재 안을 따랐다: `style`은 문자열만, `class` 그대로, 이벤트 표는 WeakMap, 렌더링 오류는 화면 유지 + 콘솔, 오류 메시지 한국어, `queueMicrotask` 예약, effect는 반영 직후, `useCallback` 없음, 데모는 별도 `phase2/` 페이지.
+- `EventHandler`/`PropValue` 타입은 core(`html-to-vnode/types.ts`)에 두고 runtime이 다시 내보낸다. core가 runtime에 의존하지 않게 하기 위해서다.
 
 ## 7. 우선 처리할 리스크
 
@@ -139,8 +185,9 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 
 ## 8. 다음 작업
 
-1. 실제 브라우저 확인: `npm run dev`로 열어 하이라이트, 768px 미만 배치, `confirm` 창 확인 (jsdom은 `Element.animate`·레이아웃 미지원).
-2. Phase 2: 함수형 컴포넌트와 hooks.
+1. PR #2(`feat/virtual-dom-vnode` → `develop`) 병합 후 Phase 2 PR 생성.
+2. 리스크 정리: Phase 2 항목을 `risk_issue/`에 추가 (인덱스 diff로 목록 중간 삭제 시 Patch 증가, 렌더링 오류가 콘솔에만 보임 등).
+3. key 기반 diff (목록 Patch 감소).
 
 ## 9. 커밋 기록
 
@@ -161,5 +208,15 @@ Patch 버튼 한 번의 흐름 (`src/app/controller.ts`):
 | b05f2c3 / 36f9c24 | StateHistory 기획서 / 구현 |
 | d4aedb5 | 진행 현황 갱신 (StateHistory) |
 | 4bb728b / ae205f6 | 검증 페이지 기획서 / 구현 |
+| c64630b | 진행 현황 갱신 (검증 페이지) — 여기까지 PR #2 |
+| 4fb26e7 / 6565504 | h() 기획서 / 구현 |
+| c69b87b / d2e4988 | 이벤트 props 기획서 / 구현 |
+| db204ff / 5061786 | resolve 기획서 / 구현 |
+| c003384 / ec781ec | FunctionComponent 기획서 / 구현 |
+| bddd495 / 092084c | Hook 실행 환경 기획서 / 구현 |
+| 48edc25 / b8a5e32 | useState 기획서 / 구현 |
+| a093a2c / 4523008 | useEffect 기획서 / 구현 |
+| 6854bf2 / 227135c | useMemo 기획서 / 구현 |
+| 5323f7f / d362ea6 | Todo 데모 기획서 / 구현 |
 
-`a3bf406`부터 최신 커밋까지는 아직 원격에 올리지 않았다.
+`feat/virtual-dom-vnode`는 `c64630b`까지 원격에 있다. `feat/phase2-components-hooks`는 아직 원격에 올리지 않았다.
