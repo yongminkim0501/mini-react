@@ -69,7 +69,7 @@ describe('fiber-sync double buffer / Render and Commit', () => {
     expect(b).not.toBe(a);
     set(2); await flush();
     expect(root.current).toBe(a);
-    expect(events).toEqual(Array(3).fill(['renderStart', 'renderEnd', 'commit']).flat());
+    expect(events.filter((type) => type !== 'renderSlice')).toEqual(Array(3).fill(['renderStart', 'renderEnd', 'commit']).flat());
   });
 
   it('failed Render preserves committed DOM, memo and actions; retry applies queued updater once', async () => {

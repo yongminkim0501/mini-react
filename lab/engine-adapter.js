@@ -14,11 +14,11 @@ import {
   useMemo,
   useState,
 } from '../src/runtime/index.ts';
-import { createFiberSyncEngine } from '../src/fiber/index.ts';
+import { createFiberSyncEngine, createFiberSliceEngine } from '../src/fiber/index.ts';
 
 export const ENGINE_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice', 'fiber']);
 /** 지금 구현된 모드. 러너는 나머지를 건너뛰고 결과에 skippedEngines로 남긴다. */
-export const IMPLEMENTED_MODES = /** @type {const} */ (['stack', 'fiber-sync']);
+export const IMPLEMENTED_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice']);
 
 /** @param {string} mode */
 export function isImplemented(mode) {
@@ -35,8 +35,8 @@ export function createEngine(mode) {
   if (!ENGINE_MODES.includes(/** @type {any} */ (mode))) {
     throw new Error(`알 수 없는 엔진 모드: ${mode} (가능: ${ENGINE_MODES.join(', ')})`);
   }
-  if (mode !== 'stack' && mode !== 'fiber-sync') throw new Error(`엔진 모드 '${mode}'는 아직 구현되지 않았습니다 (not implemented)`);
-  const engine = mode === 'stack' ? createStackEngine() : createFiberSyncEngine();
+  if (!isImplemented(mode)) throw new Error(`엔진 모드 '${mode}'는 아직 구현되지 않았습니다 (not implemented)`);
+  const engine = mode === 'stack' ? createStackEngine() : mode === 'fiber-sync' ? createFiberSyncEngine() : createFiberSliceEngine();
   activeEngine = engine;
   return engine;
 }

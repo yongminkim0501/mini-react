@@ -54,7 +54,7 @@ export interface FiberNode {
   propsDiff: PropsDiff | null;
 }
 export interface EngineEvent {
-  type: 'renderStart' | 'renderEnd' | 'commit' | 'renderError';
+  type: 'renderStart' | 'renderEnd' | 'commit' | 'renderError' | 'renderSlice';
   root: object;
   label: string;
   t: number;
@@ -62,7 +62,7 @@ export interface EngineEvent {
   ok?: boolean;
   mounted?: boolean;
   patchCount?: number;
-  /** Active JS elapsed time; not OS/thread CPU accounting. B-1 never yields. */
+  /** Sum of work intervals excluding yielded time, not OS/thread CPU accounting. */
   activeMs?: number;
 }
 export interface RenderHost {
