@@ -308,6 +308,8 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
   return {
     durationMs: duration,
     frameBudgetMs: budgetMs,
+    /** 이 실행의 프레임 간격으로 다시 추정한 주사율 (진단용). 실행 중 주사율이 바뀌었는지 본다. */
+    refreshHzObserved: estimateRefreshHz(s.frames),
     frameP50: frames.p50,
     frameP95: frames.p95,
     frameMax: frames.max,

@@ -182,6 +182,7 @@ describe('주사율과 프레임 예산', () => {
     const at120 = summarizeSession(session, 100, true, 1000 / 120);
     expect(at120.framesJank).toBe(3); // 20, 30, 40 > 16.7
     expect(at120.progressDropped).toBe(2); // 30, 20 > 16.7
+    expect(at60.refreshHzObserved).toBe(Math.round(1000 / 25));
     expect(at60.inputP95).toBe(300);
     expect(at60.inputEventP95).toBe(100);
   });
