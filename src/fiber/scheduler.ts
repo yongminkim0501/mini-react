@@ -10,6 +10,7 @@ export class SliceScheduler {
   private closed = false;
   private channel: MessageChannel | null = null;
   private syncPosted = false;
+  private flushingHost = false;
   constructor(
     private readonly now = () => performance.now(),
     private readonly post?: (callback: () => void) => void,
@@ -35,7 +36,7 @@ export class SliceScheduler {
     this.queue = this.queue.filter((item) => item !== job);
   }
   private requestTask() {
-    if (this.posted || !this.queue.length || this.closed) return;
+    if (this.posted || !this.queue.length || this.closed || this.flushingHost) return;
     this.posted = true;
     if (this.post) this.post(() => this.flush());
     else {
@@ -49,9 +50,18 @@ export class SliceScheduler {
   private flush() {
     this.posted = false;
     if (this.closed) return;
-    this.runNext(false);
+    if (!this.prioritized) { this.runNext(false); return; }
+    const deadline = this.now() + SLICE_MS;
+    this.flushingHost = true;
+    try {
+      do { this.runNext(false, deadline); }
+      while (this.queue.length && this.now() < deadline);
+    } finally {
+      this.flushingHost = false;
+      this.requestTask();
+    }
   }
-  private runNext(sync: boolean) {
+  private runNext(sync: boolean, hostDeadline?: number) {
     let index = 0;
     if (this.prioritized) {
       for (let i = 1; i < this.queue.length; i++) {
@@ -61,7 +71,7 @@ export class SliceScheduler {
     const job = this.queue.splice(index, 1)[0];
     if (!job) return;
     this.queued.delete(job);
-    const deadline = this.now() + SLICE_MS;
+    const deadline = hostDeadline ?? this.now() + SLICE_MS;
     try { if (job.runSlice(() => !sync && this.now() >= deadline)) this.enqueue(job); }
     finally { this.requestTask(); }
   }

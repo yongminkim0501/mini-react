@@ -26,6 +26,19 @@ function lab() {
 }
 
 describe('lane queue rebase', () => {
+  it('spends the remaining host budget after a short higher-priority root, without starving Transition', () => {
+    let clock=0, work=0;
+    const tasks:(()=>void)[]=[],order:string[]=[];
+    const scheduler=new SliceScheduler(()=>clock,(fn)=>tasks.push(fn),true);
+    const low={getPriority:()=>TransitionLane,runSlice:(yieldNow:()=>boolean)=>{
+      order.push('transition');do{work++;clock+=1;}while(work<10&&!yieldNow());return work<10;
+    }};
+    const high={getPriority:()=>DefaultLane,runSlice:()=>{order.push('default');clock+=0.1;return false;}};
+    try {
+      scheduler.enqueue(low);scheduler.enqueue(high);tasks.shift()!();
+      expect(order).toEqual(['default','transition']);expect(work).toBe(5);
+    } finally {scheduler.dispose();}
+  });
   it('preserves non-commutative replacement order and replayed Sync actions', () => {
     const sync = rebaseUpdates(0, [{lane:TransitionLane,action:10},{lane:SyncLane,action:1}],SyncLane);
     expect(sync.value).toBe(1); expect(sync.baseState).toBe(0);
