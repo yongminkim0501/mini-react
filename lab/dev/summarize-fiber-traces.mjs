@@ -29,15 +29,32 @@ for (const { mode, scenario = 'S2', filename, markerStart = 'B1-input-start', ma
   edges.sort((a, b) => a[0] - b[0]);
   const active = { Scripting: 0, Rendering: 0, Painting: 0 };
   const micros = { Scripting: 0, Rendering: 0, Painting: 0, OtherOrIdle: 0 };
+  const segments = [];
   let previous = start.ts;
   for (const [time, category, delta] of [...edges, [end.ts, 'Scripting', 0]]) {
     const owner = active.Painting ? 'Painting' : active.Rendering ? 'Rendering' : active.Scripting ? 'Scripting' : 'OtherOrIdle';
     micros[owner] += time - previous;
+    if (time > previous) segments.push({ from: previous, to: time, owner });
     active[category] += delta;
     previous = time;
   }
   const durationMs = (end.ts - start.ts) / 1000;
-  rows.push({ mode, scenario, durationMs, categories: Object.fromEntries(Object.entries(micros).map(([key, us]) => [key, { ms: us / 1000, percent: us / (end.ts - start.ts) * 100 }])) });
+  const tasks = events.filter((e) => e.pid === start.pid && e.tid === start.tid && e.name === 'RunTask' && e.ph === 'X' && e.ts < end.ts && e.ts + e.dur > start.ts)
+    .map((task) => {
+      const from = Math.max(start.ts, task.ts), to = Math.min(end.ts, task.ts + task.dur);
+      const ms = { Scripting: 0, Rendering: 0, Painting: 0, OtherOrIdle: 0 };
+      for (const s of segments) ms[s.owner] += Math.max(0, Math.min(to, s.to) - Math.max(from, s.from)) / 1000;
+      return { from, durationMs: (to - from) / 1000, ...ms };
+    });
+  rows.push({ mode, scenario, durationMs,
+    categories: Object.fromEntries(Object.entries(micros).map(([key, us]) => [key, { ms: us / 1000, percent: us / (end.ts - start.ts) * 100 }])),
+    taskDiagnostics: {
+      scriptingOver50Count: tasks.filter((t) => t.Scripting > 50).length,
+      maxScriptingPerTaskMs: Math.max(0, ...tasks.map((t) => t.Scripting)),
+      maxRenderingPaintingPerTaskMs: Math.max(0, ...tasks.map((t) => t.Rendering + t.Painting)),
+      tasks,
+    },
+  });
 }
 await writeFile(`${directory}/trace-summary.json`, JSON.stringify({
   definition: 'Marker-bounded main-thread exclusive union. Painting > Rendering > Scripting; remaining time OtherOrIdle. Not DevTools UI Summary.',
