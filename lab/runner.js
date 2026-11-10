@@ -28,6 +28,8 @@ export const TABLE_COLUMNS = [
   ['framesJank', '끊긴 프레임', 1],
   ['progressFps', '진행 바 fps', 1],
   ['progressDropped', '진행 바 끊김', 1],
+  ['refreshHzObserved', '실행 중 주사율(Hz)', 0],
+  ['refreshUnstable', '주사율 변경 실행 비율', 2],
 ];
 
 /**

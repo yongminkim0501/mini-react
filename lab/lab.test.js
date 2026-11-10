@@ -165,9 +165,9 @@ describe('주사율과 프레임 예산', () => {
     expect(isNon60Hz(NaN)).toBe(true);
   });
 
-  it('끊긴 프레임은 실행 중 관측한 주사율 예산의 2배 초과로 센다', () => {
-    // 60Hz로 도는 실행: 조용한 구간은 16.7ms, 중간에 긴 프레임 두 개
-    const frames = [...Array(30).fill(16.7), 40, 20, ...Array(30).fill(16.7)];
+  it('끊긴 프레임은 실행 중 프레임 중앙값으로 정한 예산의 2배(+1ms) 초과로 센다', () => {
+    // 60Hz로 도는 실행: 대부분 16.7ms, 중간에 긴 프레임 두 개, 짧은 120Hz 구간
+    const frames = [...Array(40).fill(16.7), 40, 33.8, ...Array(30).fill(8.3), ...Array(40).fill(16.7)];
     const frameEnds = frames.map((_, i) => (i + 1) * 17);
     const session = {
       startedAt: 0,
@@ -179,13 +179,14 @@ describe('주사율과 프레임 예산', () => {
       updates: [],
       progressCommits: [0, 17, 57, 74],
     };
-    // 실행 전 추정이 120Hz였어도 관측한 60Hz 기준으로 판정한다 (60Hz 프레임을 끊김으로 세지 않음)
+    // 실행 전 추정이 120Hz였고 120Hz 구간이 섞여 있어도 중앙값(60Hz) 기준으로 판정한다
     const summary = summarizeSession(session, 2000, true, 1000 / 120);
     expect(summary.refreshHzObserved).toBe(60);
+    expect(summary.refreshUnstable).toBe(1);
     expect(summary.frameBudgetMs).toBeCloseTo(16.67, 1);
     expect(summary.preRunBudgetMs).toBeCloseTo(8.33, 1);
-    expect(summary.framesJank).toBe(1); // 40 > 33.3, 20은 아님
-    expect(summary.progressDropped).toBe(1); // 40 > 33.3
+    expect(summary.framesJank).toBe(1); // 40 > 34.3, 33.8은 여유 안
+    expect(summary.progressDropped).toBe(1); // 40 > 34.3
     expect(summary.inputP95).toBe(300);
     expect(summary.inputEventP95).toBe(100);
   });
