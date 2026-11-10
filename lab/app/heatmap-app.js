@@ -225,7 +225,14 @@ export function createHeatmapApp(engine) {
       setQuery(value);
       startTransition(() => setMatchQuery(value));
     };
-    const onSelect = (server, minute) => setSelected((prev) => ({ server, minute, seq: (prev ? prev.seq : 0) + 1 }));
+    const onSelect = useMemo(
+      () => (server, minute) => setSelected((prev) => ({ server, minute, seq: (prev ? prev.seq : 0) + 1 })),
+      props.appVariant === 'cached' ? [setSelected] : undefined,
+    );
+    const heatmapVNode = useMemo(
+      () => h(Heatmap, { data, matches, slo, selected, cellCost: props.cellCost, onSelect }),
+      props.appVariant === 'cached' ? [data, matches, slo, selected, props.cellCost, onSelect] : undefined,
+    );
 
     return h(
       'div',
@@ -250,7 +257,7 @@ export function createHeatmapApp(engine) {
         h(DetailPanel, { data, selected }),
         h(ClickCounter, { count: selected ? selected.seq : 0 }),
       ),
-      h(Heatmap, { data, matches, slo, selected, cellCost: props.cellCost, onSelect }),
+      heatmapVNode,
     );
   }
 

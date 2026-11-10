@@ -54,13 +54,13 @@ function main() {
 
   /**
    * 엔진 하나와 그 위의 루트 두 개. 엔진을 바꿀 때는 루트를 모두 내리고 새 엔진으로 다시 만든다.
-   * @type {{ mode: string, engine: any, App: Function, progress: any, app: any, unsubscribe: () => void } | null}
+   * @type {{ mode: string, appVariant: string, engine: any, App: Function, progress: any, app: any, unsubscribe: () => void } | null}
    */
   let current = null;
 
   /** @param {string} mode */
-  const activate = (mode) => {
-    if (current?.mode === mode) return;
+  const activate = (mode, appVariant = params.appVariants[0]) => {
+    if (current?.mode === mode && current.appVariant === appVariant) return;
     if (current) {
       current.app.unmount();
       current.progress.unmount();
@@ -73,17 +73,17 @@ function main() {
     const { App } = createHeatmapApp(engine);
     const progress = engine.createRoot(ProgressApp, $('progress-root'), { label: 'progress' });
     progress.mount();
-    const app = engine.createRoot(App, $('app-root'), { label: 'heatmap', props: appProps });
+    const app = engine.createRoot(App, $('app-root'), { label: 'heatmap', props: { ...appProps, appVariant } });
     app.mount();
-    current = { mode, engine, App, progress, app, unsubscribe };
-    $('engine-name').textContent = mode;
+    current = { mode, appVariant, engine, App, progress, app, unsubscribe };
+    $('engine-name').textContent = `${mode} / ${appVariant}`;
   };
 
   /** 실행마다 처음 상태로: 히트맵 루트를 내리고 같은 props로 다시 올린 뒤 안정될 때까지 기다린다. */
   const resetApp = async () => {
     if (!current) throw new Error('엔진이 없습니다');
     current.app.unmount();
-    current.app = current.engine.createRoot(current.App, $('app-root'), { label: 'heatmap', props: appProps });
+    current.app = current.engine.createRoot(current.App, $('app-root'), { label: 'heatmap', props: { ...appProps, appVariant: current.appVariant } });
     current.app.mount();
     await current.app.instance.whenIdle?.();
     await new Promise((r) => setTimeout(r, 500));
@@ -108,6 +108,7 @@ function main() {
   };
   const runner = createRunner({
     metrics,
+    appVariants: params.appVariants,
     host: { isImplemented, activate, resetApp, waitForIdle },
     info: { size: params.size, seed: params.seed, cellCost: params.cellCost },
     onScenario: (label, mode) => {

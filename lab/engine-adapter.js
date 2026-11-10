@@ -1,8 +1,8 @@
 /**
  * 엔진 어댑터. 앱과 측정 도구는 이 모듈만 거쳐 엔진을 쓴다.
- * 같은 앱 팩터리를 stack과 세 Fiber 모드에 연결한다.
+ * 같은 앱 팩터리를 stack과 네 Fiber 모드에 연결한다.
  *
- * - createEngine(mode): 'stack' | 'fiber-sync' | 'fiber-slice' | 'fiber'. 네 모드를 지원한다.
+ * - createEngine(mode): 'stack' | 'fiber-sync' | 'fiber-slice' | 'fiber' | 'fiber-bailout'. 다섯 모드를 지원한다.
  * - startTransition(fn): 마지막으로 만든 엔진의 startTransition. stack은 fn()을 즉시 실행한다.
  * - 계측: engine.subscribe(listener)로 { type, root, label, t, patchCount? } 이벤트를 받는다.
  */
@@ -14,11 +14,11 @@ import {
   useMemo,
   useState,
 } from '../src/runtime/index.ts';
-import { createFiberSyncEngine, createFiberSliceEngine, createFiberEngine } from '../src/fiber/index.ts';
+import { createFiberSyncEngine, createFiberSliceEngine, createFiberEngine, createFiberBailoutEngine } from '../src/fiber/index.ts';
 
-export const ENGINE_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice', 'fiber']);
+export const ENGINE_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice', 'fiber', 'fiber-bailout']);
 /** 지금 구현된 모드. 러너는 나머지를 건너뛰고 결과에 skippedEngines로 남긴다. */
-export const IMPLEMENTED_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice', 'fiber']);
+export const IMPLEMENTED_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice', 'fiber', 'fiber-bailout']);
 
 /** @param {string} mode */
 export function isImplemented(mode) {
@@ -36,7 +36,7 @@ export function createEngine(mode) {
     throw new Error(`알 수 없는 엔진 모드: ${mode} (가능: ${ENGINE_MODES.join(', ')})`);
   }
   if (!isImplemented(mode)) throw new Error(`엔진 모드 '${mode}'는 아직 구현되지 않았습니다 (not implemented)`);
-  const engine = mode === 'stack' ? createStackEngine() : mode === 'fiber-sync' ? createFiberSyncEngine() : mode === 'fiber-slice' ? createFiberSliceEngine() : createFiberEngine();
+  const engine = mode === 'stack' ? createStackEngine() : mode === 'fiber-sync' ? createFiberSyncEngine() : mode === 'fiber-slice' ? createFiberSliceEngine() : mode === 'fiber' ? createFiberEngine() : createFiberBailoutEngine();
   activeEngine = engine;
   return engine;
 }

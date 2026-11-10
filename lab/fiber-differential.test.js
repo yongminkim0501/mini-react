@@ -5,11 +5,11 @@ import { createHeatmapApp } from './app/heatmap-app.js';
 afterEach(() => document.body.replaceChildren());
 
 it('same heatmap inputs, regeneration, selection, SLO and resize produce identical DOM', async () => {
-  async function run(mode) {
+  async function run(mode, appVariant = 'current') {
     const engine = createEngine(mode);
     const { App } = createHeatmapApp(engine);
     const container = document.createElement('div'); document.body.append(container);
-    const root = engine.createRoot(App, container, { label: 'heatmap', props: { size: 1000, seed: 42, cellCost: 0 } });
+    const root = engine.createRoot(App, container, { label: 'heatmap', props: { size: 1000, seed: 42, cellCost: 0, appVariant } });
     const snapshots = [];
     const record = async () => {
       await Promise.resolve();
@@ -36,4 +36,5 @@ it('same heatmap inputs, regeneration, selection, SLO and resize produce identic
   expect(await run('fiber-sync')).toEqual(baseline);
   expect(await run('fiber-slice')).toEqual(baseline);
   expect(await run('fiber')).toEqual(baseline);
-}, 20000);
+  for (const mode of ['stack','fiber','fiber-bailout']) for (const app of ['current','cached']) expect(await run(mode,app)).toEqual(baseline);
+}, 40000);

@@ -419,3 +419,26 @@
 - **제안:** 동일 위치의 VComponent 객체 ===를 비교한다. 경계 헤더의 WIP 연결과 flags 초기화, 공유 자손 미방문, 캐시 영역 변경 목록 미생성을 조건으로 둔다. 불변성·순수성 계약과 shallow freeze의 한계를 명시한다. Render/Commit 방문·함수 호출·실제 DOM 호출 카운터를 분리한다.
 - **제안:** React 기본 props 동일성 bailout+JSX 노드 useMemo에 대응시키며 React.memo의 prop별 비교와 구분한다. 공식 useMemo 문구와 v19.2.0 소스를 직접 확인했다. 매 Commit 차등은 허용되는 중간 스냅샷을 고려해 상태 버전/oracle로 정렬하고 document.title을 격리한다.
 - **범위:** rowsBase와 선택 행 배열을 두 useMemo로 만드는 클릭 최적화는 별도 후속안이다. slo/cellCost/null matches를 반영한 예시만 기록했고, 최소 B-4에 포함해 구현하지 않는다. [B-4 rev2](codex/B4-design.md).
+
+### B35 · 2026-11-10 · B-4 rev2 승인과 경계 소유권
+
+- **승인:** 사용자가 rev2 엔진 설계 1~5와 App 루트 두 useMemo 예외를 승인했다. 같은 worktree/브랜치에서 구현하며 push/PR은 하지 않는다. 행 캐시·선택 좌표 고정·key 매칭·prop별 비교는 범위 밖이다.
+- **결정:** 순수 컴포넌트의 단일 host 출력 기록을 그 host 부모 Fiber의 current/WIP에 보관한다. 동일 확장 경로와 평탄화 인덱스에서 VComponent ===일 때만 적중한다. 텍스트·빈 출력·다중 반환은 fallback한다. 투명한 중첩 경계 기록도 보존한다.
+- **결정:** 적중 시 경계 헤더 하나만 기존 makeFiber로 초기화하고 새 return/sibling에 연결한다. 공유 자손의 return은 방문하지 않는다. 경계 헤더의 조상 key 전달 변경만 diff 가능하며 공유 구간은 Commit 목록에 넣지 않는다. 이후 미스는 방문하는 WIP의 부모 연결을 다시 만든다. 기존 alternate 연결 bookkeeping 외에 커밋된 경계/자손/Hook 상태를 Render에서 덮어쓰지 않는다.
+
+### B36 · 2026-11-10 · 같은 빌드의 current/cached
+
+- **결정:** App 루트에만 onSelect와 Heatmap VNode의 useMemo 두 개를 추가한다. cached는 승인된 deps, current는 undefined deps로 매 렌더 새 결과를 만든다. Hook 수를 변형 중에도 고정한다. 다른 앱 함수·stack·data·h는 수정하지 않는다.
+- **가정:** current는 기존 참조 동작을 보존하는 대조군이지만 두 Hook 호출/슬롯 비용이 추가된다. 이 비용은 숨기지 않고 이번 동일 빌드 내 비교만 사용한다. 앱 변형은 app=current/cached 또는 apps=current,cached로 선택한다.
+- **결정:** 같은 셀 재클릭도 selected 새 객체와 seq 증가를 유지한다. 캐시된 위임 핸들러는 자신의 props와 일치하고 onSelect는 함수형 업데이트를 써서 오래된 selected를 읽지 않는다.
+
+### B37 · 2026-11-10 · B-4 카운터와 폐기 비용
+
+- **결정:** 함수 호출, beginWork/재사용 헤더 진입, 단계 작업, Commit 변경 목록·anchor·Hook 방문, live/detached DOM API, 핸들러 표 갱신을 분리한다. total=inside+outside이며 Heatmap 함수는 inside, host 헤더는 outside, 자손은 inside다. 브라우저 Layout/Paint는 별도 B-3 지표다.
+- **결정:** hit/miss와 배타적인 miss 사유 세 개를 추가한다. 마운트도 miss이나 실행 전 마운트는 측정 창 밖이다. 다른 host 부모에는 경계 기록이 없어 different VComponent(이전 기록 없음)로 집계한다. 이 부모 안에서 같은 VNode의 위치가 바뀌면 different position이다. 형태 미지원은 fallback을 우선한다.
+- **결정:** 커밋과 폐기 attempt에 카운터 스냅샷을 남기고 원자료를 보존한다. counterTotals/Sync/Aborted는 합계다. stack은 수정 금지 범위이므로 null=N/A이며 0으로 채우지 않는다. 기존 fiber에도 같은 카운터를 적용하므로 계측 비용을 포함한 동일 세션 비교다.
+
+### B38 · 2026-11-10 · B-4 정확성 관문과 비교 순서
+
+- **결정:** 네 전제 테스트를 두 모드에 유지한다. 네 번 적중 후 첫 미스의 깊은 텍스트·삽입·삭제와 핸들러, 중첩 기록, key 전달, fallback·위치 이동·부모 이동, 불변성 계약 짝을 검증한다. 고정 seed 스크립트는 적용된 상태 버전의 독립 DOM/title oracle에 매 Commit을 대조한다. passive effect는 Commit 이벤트 뒤에 등록되므로 테스트는 이벤트 다음 테스트 microtask에서 drain한다.
+- **결정:** 20k S1~S4에서 current/stack → current/fiber → current/fiber-bailout → cached/stack → cached/fiber → cached/fiber-bailout 순서를 실행마다 반복한다. 조합별 워밍업 1회를 버리고 3회 잰다. B-3 시간 지표 정의를 유지한다. 과거 B-3과 직접 비율을 만들지 않는다.

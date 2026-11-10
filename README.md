@@ -48,7 +48,8 @@ npm run dev
 
 | 이름 | 기본값 | 설명 |
 |------|--------|------|
-| `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber`. `stack`·`fiber-sync`·`fiber-slice`·`fiber`를 지원한다. |
+| `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber`. `stack`·`fiber-sync`·`fiber-slice`·`fiber`·`fiber-bailout`을 지원한다. |
+| `app` / `apps` | `current` | `cached`는 승인된 두 useMemo를 켠다. `apps=current,cached`는 모든 앱×엔진 조합을 실행마다 교차 측정한다. |
 | `engines` | 없음 | `stack,fiber-slice,fiber`처럼 여러 개를 주면 실행 단위로 번갈아 측정한다. 구현되지 않은 모드는 건너뛰고 결과의 `skippedEngines`에 남긴다. `engine`보다 우선한다. |
 | `size` | `20000` | 셀 수. 2,000~20,000, 1,000 단위다(100분 × 서버 행). |
 | `seed` | `42` | 데이터·클릭 대상 시드. 모든 무작위성은 이 시드를 쓰는 mulberry32를 거친다. |
@@ -130,3 +131,19 @@ README용 녹화는 **1280×720 창**에서 `?hud=record`로 한다. HUD는 이 
 ### B-3 추가 진단 지표
 
 기존 고정 예산·LoAF·총 지연 정의는 유지한다. S2/S3은 예정 시각→실제 이벤트 실행→처리 렌더 시작→커밋→다음 rAF의 각 구간 p95를 추가한다. fiber에서는 Sync 렌더를 연결하며, 다른 엔진은 입력을 처리한 렌더를 연결한다. 각 구간의 p95 합은 전체 지연 p95와 같을 필요가 없다. Sync Render 작업 시간은 DOM Commit을 제외한 루트 실행·전체 재조정 비용이다. 폐기 Transition 수·작업 시간은 커밋된 작업 비용과 따로 기록하고 allActiveTotalMs에는 둘을 합친다. 마지막 입력/클릭 발사 직후부터 최종 heatmap idle Commit 다음 rAF까지를 heatmapSettleMs로 기록한다. 이것은 실제 물리적 paint 완료의 근사치다.
+
+### B-4 경계 생략과 카운터
+
+`?engines=stack,fiber,fiber-bailout&apps=current,cached&size=20000&runs=3&autorun=1`로 같은 빌드에서 6개 조합을 비교한다. 조합마다 워밍업 1회를 버리고, 실행마다 current/stack → current/fiber → current/fiber-bailout → cached/stack → cached/fiber → cached/fiber-bailout 순서로 돈다. `current`는 새 두 useMemo에 deps를 주지 않아 매번 새 함수·VNode를 만들고, `cached`는 승인된 의존성을 쓴다. Hook 개수는 고정이다. current도 두 Hook 슬롯의 작은 추가 비용이 있어 과거 B-3 원본과 바이트 단위 동일한 대조군은 아니다.
+
+fiber-bailout은 같은 host 부모·확장 경로·출력 인덱스의 VComponent 객체가 동일하고 단일 host를 반환할 때만 생략한다. 자식은 순수 함수여야 하며 중첩 데이터를 제자리 수정한 같은 VNode는 이전 화면을 유지한다. 새 VNode를 전달하면 갱신된다. 행 캐시·key 매칭·prop별 얕은 비교는 없다.
+
+각 Commit과 폐기 attempt의 `counters`를 원자료에 보존한다. `counterTotals`/`counterSync`/`counterAborted`는 각각 커밋 합계/Sync 합계/폐기 합계이며 total=inside+outside다. stack은 계측 금지 범위를 유지하므로 카운터는 null(N/A)이다. 수치는 합계이며 시간 평균과 섞지 않는다.
+
+- rootCalls/childCalls: 루트/순수 자식 호출. Heatmap 함수 자체는 inside, 그 host 경계 헤더는 outside, 하위 자손은 inside다.
+- renderFiberVisits: beginWork 또는 재사용 헤더 진입 수. renderWorkUnits는 단계 반복 수다.
+- commitFiberVisits = commitEffectVisits + commitAnchorSiblingVisits. commitHookVisits는 루트 Hook 큐 반영·레인 재계산 순회다.
+- liveDomWrites는 엔진의 연결 DOM API 호출 수(폼 property 쓰기 포함), detachedDomOps는 새 노드 생성·속성·자식 조립, eventHandlerWrites는 핸들러 표 갱신이다. 외부 입력 주입과 브라우저 layout/paint는 제외한다.
+- bailoutHits/Misses와 미스 이유(different VComponent / different position / fallback shape)를 기록한다. 초기 등록도 miss이며 측정 창 밖 마운트는 요약에서 제외한다. 같은 객체를 다른 host 부모로 옮기면 그 부모에는 기록이 없으므로 different VComponent(이전 경계 없음)로 집계한다.
+
+지표 시간 정의는 B-3과 같다. 경계 캐시·카운터 계측 비용을 포함한 이번 세션 안에서 비교하며 과거 B-3 숫자와 직접 성능비를 만들지 않는다.
