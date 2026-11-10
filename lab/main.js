@@ -65,6 +65,7 @@ function main() {
       current.app.unmount();
       current.progress.unmount();
       current.unsubscribe();
+      current.engine.dispose?.();
     }
     const engine = createEngine(mode);
     const unsubscribe = engine.subscribe(metrics.onEngineEvent);
@@ -84,6 +85,7 @@ function main() {
     current.app.unmount();
     current.app = current.engine.createRoot(current.App, $('app-root'), { label: 'heatmap', props: appProps });
     current.app.mount();
+    await current.app.instance.whenIdle?.();
     await new Promise((r) => setTimeout(r, 500));
   };
 
@@ -99,9 +101,14 @@ function main() {
   // 측정 때는 시나리오마다 다시 잰다.
   setTimeout(() => metrics.calibrateRefresh(), 1500);
 
+  const waitForIdle = async () => {
+    await current?.app.instance.whenIdle?.();
+    // Include final visual rendering in all engines' measurement windows equally.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  };
   const runner = createRunner({
     metrics,
-    host: { isImplemented, activate, resetApp },
+    host: { isImplemented, activate, resetApp, waitForIdle },
     info: { size: params.size, seed: params.seed, cellCost: params.cellCost },
     onScenario: (label, mode) => {
       hud?.setScenario(label, mode);
@@ -110,7 +117,7 @@ function main() {
   });
 
   // 자동화에서 결과를 읽을 수 있게 노출한다.
-  const lab = { params, results: runner.results, done: false, error: null, savedPath: null };
+  const lab = { params, results: runner.results, done: false, error: null, savedPath: null, waitForIdle };
   Object.assign(window, { __lab: lab });
 
   setupPanel(runner);

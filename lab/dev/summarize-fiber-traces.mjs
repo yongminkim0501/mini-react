@@ -12,10 +12,11 @@ const categories = {
   Painting: new Set(['Paint', 'PaintImage', 'CompositeLayers', 'Commit']),
 };
 const rows = [];
-for (const mode of ['stack', 'fiber-sync']) {
-  const events = JSON.parse(gunzipSync(await readFile(`${directory}/${mode}-20k-S2-key.trace.json.gz`))).traceEvents;
-  const start = events.find((e) => e.name === 'B1-input-start');
-  const end = events.find((e) => e.name === 'B1-input-end');
+const manifest = JSON.parse(await readFile(`${directory}/trace-info.json`, 'utf8'));
+for (const { mode, scenario = 'S2', filename, markerStart = 'B1-input-start', markerEnd = 'B1-input-end' } of manifest) {
+  const events = JSON.parse(gunzipSync(await readFile(`${directory}/${filename}`))).traceEvents;
+  const start = events.find((e) => e.name === markerStart);
+  const end = events.find((e) => e.name === markerEnd);
   if (!start || !end || end.ts <= start.ts) throw new Error(`Missing markers: ${mode}`);
   const edges = [];
   for (const event of events) {
@@ -36,7 +37,7 @@ for (const mode of ['stack', 'fiber-sync']) {
     previous = time;
   }
   const durationMs = (end.ts - start.ts) / 1000;
-  rows.push({ mode, durationMs, categories: Object.fromEntries(Object.entries(micros).map(([key, us]) => [key, { ms: us / 1000, percent: us / (end.ts - start.ts) * 100 }])) });
+  rows.push({ mode, scenario, durationMs, categories: Object.fromEntries(Object.entries(micros).map(([key, us]) => [key, { ms: us / 1000, percent: us / (end.ts - start.ts) * 100 }])) });
 }
 await writeFile(`${directory}/trace-summary.json`, JSON.stringify({
   definition: 'Marker-bounded main-thread exclusive union. Painting > Rendering > Scripting; remaining time OtherOrIdle. Not DevTools UI Summary.',

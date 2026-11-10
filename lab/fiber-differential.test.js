@@ -13,6 +13,7 @@ it('same heatmap inputs, regeneration, selection, SLO and resize produce identic
     const snapshots = [];
     const record = async () => {
       await Promise.resolve();
+      await root.instance.whenIdle?.();
       root.instance.flushPassiveEffects?.();
       snapshots.push([container.innerHTML, document.title]);
     };
@@ -29,7 +30,9 @@ it('same heatmap inputs, regeneration, selection, SLO and resize produce identic
       event('#size', '2000', 'change'); await record();
       for (let i = 0; i < 3; i++) { container.querySelector('#regen').click(); await record(); }
       return snapshots;
-    } finally { root.unmount(); container.remove(); }
+    } finally { root.unmount(); engine.dispose?.(); container.remove(); }
   }
-  expect(await run('fiber-sync')).toEqual(await run('stack'));
+  const baseline = await run('stack');
+  expect(await run('fiber-sync')).toEqual(baseline);
+  expect(await run('fiber-slice')).toEqual(baseline);
 }, 20000);
