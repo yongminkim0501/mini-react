@@ -1,0 +1,46 @@
+[
+  {
+    "mode": "fiber",
+    "scenario": "S2",
+    "filename": "fiber-20k-S2-key.trace.json.gz",
+    "markerStart": "B3-S2-start",
+    "markerEnd": "B3-S2-end",
+    "seedBefore": "새 데이터 수신 (seed 42)",
+    "environment": {
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "power": {
+        "charging": true,
+        "level": 1
+      },
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 2,
+      "echo": "d",
+      "seedAfter": "새 데이터 수신 (seed 42)"
+    }
+  },
+  {
+    "mode": "fiber",
+    "scenario": "S4",
+    "filename": "fiber-20k-S4-receive.trace.json.gz",
+    "markerStart": "B3-S4-start",
+    "markerEnd": "B3-S4-end",
+    "seedBefore": "새 데이터 수신 (seed 43)",
+    "environment": {
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "power": {
+        "charging": true,
+        "level": 1
+      },
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 2,
+      "echo": "",
+      "seedAfter": "새 데이터 수신 (seed 44)"
+    }
+  }
+]

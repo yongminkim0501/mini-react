@@ -8,7 +8,7 @@ import { runWithLane, TransitionLane } from './lanes';
 
 export { h, useEffect, useMemo, useState, FiberRoot };
 
-/** Same reconciliation and commit path, only the host scheduling policy changes. */
+/** Shared host reconciliation/commit; fiber additionally selects lanes and rebases queues. */
 export function createFiberSyncEngine() {
   return createEngine('fiber-sync');
 }

@@ -49,7 +49,7 @@ npm run dev
 | 이름 | 기본값 | 설명 |
 |------|--------|------|
 | `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber`. `stack`·`fiber-sync`·`fiber-slice`·`fiber`를 지원한다. |
-| `engines` | 없음 | `stack,fiber-sync,fiber-slice`처럼 여러 개를 주면 실행 단위로 번갈아 측정한다. 구현되지 않은 모드는 건너뛰고 결과의 `skippedEngines`에 남긴다. `engine`보다 우선한다. |
+| `engines` | 없음 | `stack,fiber-slice,fiber`처럼 여러 개를 주면 실행 단위로 번갈아 측정한다. 구현되지 않은 모드는 건너뛰고 결과의 `skippedEngines`에 남긴다. `engine`보다 우선한다. |
 | `size` | `20000` | 셀 수. 2,000~20,000, 1,000 단위다(100분 × 서버 행). |
 | `seed` | `42` | 데이터·클릭 대상 시드. 모든 무작위성은 이 시드를 쓰는 mulberry32를 거친다. |
 | `cellCost` | `0` | 셀 렌더 1회당 인공 CPU 부하(ms). 예비 옵션이다. |
@@ -59,7 +59,7 @@ npm run dev
 | `save` | 없음 | `1`이면 자동 실행이 끝난 뒤 개발 서버에 결과를 저장한다(`lab/results-inbox/`, git 제외). |
 | `hud` | 없음 | `record`면 녹화용 HUD를 띄운다. |
 
-예: `?engines=stack,fiber-sync,fiber-slice&size=20000&runs=3&autorun=1&hud=record`
+예: `?engines=stack,fiber-slice,fiber&size=20000&runs=3&autorun=1&hud=record`
 
 ### 앱 구성
 

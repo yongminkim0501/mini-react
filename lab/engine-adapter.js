@@ -1,8 +1,8 @@
 /**
  * 엔진 어댑터. 앱과 측정 도구는 이 모듈만 거쳐 엔진을 쓴다.
- * 나중에 Fiber 엔진을 같은 페이지에 연결할 때 여기만 바꾼다.
+ * 같은 앱 팩터리를 stack과 세 Fiber 모드에 연결한다.
  *
- * - createEngine(mode): 'stack' | 'fiber-sync' | 'fiber-slice' | 'fiber'. B-1까지 구현.
+ * - createEngine(mode): 'stack' | 'fiber-sync' | 'fiber-slice' | 'fiber'. 네 모드를 지원한다.
  * - startTransition(fn): 마지막으로 만든 엔진의 startTransition. stack은 fn()을 즉시 실행한다.
  * - 계측: engine.subscribe(listener)로 { type, root, label, t, patchCount? } 이벤트를 받는다.
  */
