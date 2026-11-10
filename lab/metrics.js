@@ -9,7 +9,7 @@
  */
 import { max, percentile, summarize } from './stats.js';
 import { splitLongFrame, summarizeLongFrames } from './loaf.js';
-export const METRICS_VERSION = 'B1.5-fixed-pre-run-loaf';
+export const METRICS_VERSION = 'B1.5-fixed-pre-run-loaf-v2';
 
 export const LONG_TASK_MS = 50;
 /** 끊긴 프레임 = 프레임 예산의 이 배수 + JANK_TOLERANCE_MS 초과 */
@@ -166,9 +166,9 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
   function resolveClicks() {
     if (pendingClicks.length === 0) return;
     const seq = getSelectedSeq();
-    const done = pendingClicks.filter((p) => seq > p.seqBefore);
+    const done = pendingClicks.filter((p) => seq >= p.expectedSeq);
     if (done.length === 0) return;
-    pendingClicks = pendingClicks.filter((p) => seq <= p.seqBefore);
+    pendingClicks = pendingClicks.filter((p) => seq < p.expectedSeq);
     const target = openSession();
     afterNextFrame((now) => {
       for (const p of done) target?.click.push(latency(p, now));
@@ -260,9 +260,11 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       pendingInputs.push({ value, timeStamp, intendedAt });
     },
 
-    /** 셀 클릭 발생. 클릭 전 선택 번호를 기억해 두고 그보다 커지면 반영된 것으로 본다. */
+    /** Each click requires its own sequence, even when several arrive before a Commit. */
     markClick(timeStamp, intendedAt = null) {
-      pendingClicks.push({ seqBefore: getSelectedSeq(), timeStamp, intendedAt });
+      const seqBefore = getSelectedSeq();
+      const previousExpected = pendingClicks[pendingClicks.length - 1]?.expectedSeq ?? seqBefore;
+      pendingClicks.push({ seqBefore, expectedSeq: Math.max(seqBefore, previousExpected) + 1, timeStamp, intendedAt });
     },
 
     /** 기록 시작. 이전 기록과 대기 중인 입력은 버린다. */
@@ -346,7 +348,9 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
     Math.abs(observedHz - preRunHz) > 3 || Number.isFinite(quietestHz) && Math.abs(observedHz - quietestHz) > 3
   ) ? 1 : 0;
   const jankMs = runBudgetMs * JANK_FACTOR + JANK_TOLERANCE_MS;
-  const tasks = s.longTasks.filter((t) => t.start >= s.startedAt && t.start <= endedAt);
+  // Include intervals crossing a boundary; keep timestamps and flag full durations.
+  const tasks = s.longTasks.filter((t) => t.start + t.duration > s.startedAt && t.start <= endedAt)
+    .map((t) => ({ ...t, windowOverlap: t.start < s.startedAt || t.start + t.duration > endedAt }));
   const updates = s.updates.filter((u) => !u.mounted);
   const progressGaps = [];
   for (let i = 1; i < s.progressCommits.length; i++) progressGaps.push(s.progressCommits[i] - s.progressCommits[i - 1]);
@@ -358,7 +362,8 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
   const totals = summarize(updates.map((u) => u.total));
   const active = updates.map((u) => u.activeMs ?? u.total);
   const sum = (values) => values.reduce((a, b) => a + b, 0);
-  const loafs = (s.loafs ?? []).filter((f) => f.startTime >= s.startedAt && f.startTime <= endedAt && f.duration > LONG_TASK_MS);
+  const loafs = (s.loafs ?? []).filter((f) => f.startTime + f.duration > s.startedAt && f.startTime <= endedAt && f.duration > LONG_TASK_MS)
+    .map((f) => ({ ...f, windowOverlap: f.startTime < s.startedAt || f.startTime + f.duration > endedAt }));
   const warnings = [];
   if (isNon60Hz(preRunHz)) warnings.push('pre-run-not-60Hz');
   if (refreshUnstable) warnings.push('in-run-refresh-unstable');
@@ -412,7 +417,7 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
     progressGapMax: max(progressGaps),
     ...summarizeLongFrames(loafs, loafSupported),
     renderSliceMax: s.renderSlices?.length ? max(s.renderSlices.map((f) => f.duration)) : NaN,
-    renderJsLongSliceCount: s.renderSlices?.filter((f) => f.duration > LONG_TASK_MS).length ?? NaN,
+    renderJsLongSliceCount: s.renderSlices?.length ? s.renderSlices.filter((f) => f.duration > LONG_TASK_MS).length : NaN,
     pendingInputCount: s.pendingInputCount ?? 0,
     pendingClickCount: s.pendingClickCount ?? 0,
     raw: {
