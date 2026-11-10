@@ -1,4 +1,7 @@
 import type { Action, FiberNode, Hook, RenderHost } from './types';
+import { getCurrentLane } from './lanes';
+import { rebaseUpdates } from './updateQueue';
+import type { StateUpdate } from './updateQueue';
 
 let currentlyRenderingFiber: FiberNode | null = null;
 let host: RenderHost | null = null;
@@ -39,16 +42,31 @@ export function useState<T>(initial: T | (() => T)): [T, (action: T | ((previous
     pending: [] as Action[],
     value: typeof initial === 'function' ? (initial as () => T)() : initial,
     active: false,
+    updates: [] as StateUpdate[],
+    hasBase: false,
     set: (_action: Action) => {},
   };
   if (!old) {
     queue.set = (action) => {
       if (root.rendering) throw new Error('렌더링 중에는 setState를 호출할 수 없습니다');
       if (!root.alive || !queue.active) return;
+      if (root.laneAware) {
+        if (!queue.updates.length && !queue.hasBase && typeof action !== 'function' && Object.is(action, queue.value)) return;
+        const lane = getCurrentLane();
+        if (root.schedule(lane)) queue.updates.push({ lane, action });
+        return;
+      }
       // Do not evaluate updater functions in the setter. Literal no-ops can skip scheduling.
       if (!queue.pending.length && typeof action !== 'function' && Object.is(action, queue.value)) return;
       if (root.schedule()) queue.pending.push(action);
     };
+  }
+  if (root.laneAware) {
+    const consumed = queue.updates.length;
+    const result = rebaseUpdates(old ? old.baseState : queue.value,
+      [...(old?.baseQueue ?? []), ...queue.updates.slice(0, consumed)], root.renderLane);
+    fiber.hooks.push({ kind: 'state', ...result, queue, consumed });
+    return [result.value as T, queue.set];
   }
   let value = old ? old.value : queue.value;
   const consumed = queue.pending.length;
@@ -56,7 +74,7 @@ export function useState<T>(initial: T | (() => T)): [T, (action: T | ((previous
     const action = queue.pending[i];
     value = typeof action === 'function' ? action(value) : action;
   }
-  fiber.hooks.push({ kind: 'state', value, queue, consumed });
+  fiber.hooks.push({ kind: 'state', value, queue, consumed, baseState: value, baseQueue: [] });
   return [value as T, queue.set];
 }
 

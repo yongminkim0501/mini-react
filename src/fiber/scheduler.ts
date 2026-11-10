@@ -1,21 +1,33 @@
+import { DefaultLane, SyncLane } from './lanes';
 export const SLICE_MS = 5;
-export interface SliceJob { runSlice(shouldYield: () => boolean): boolean }
+export interface SliceJob { runSlice(shouldYield: () => boolean): boolean; getPriority?(): number }
 
-/** One root per host task, FIFO rotation. No priorities, preemption or restart. */
+/** FIFO for fiber-slice; optional global lane selection + Sync microtask drain for fiber. */
 export class SliceScheduler {
   private queue: SliceJob[] = [];
   private queued = new Set<SliceJob>();
   private posted = false;
   private closed = false;
   private channel: MessageChannel | null = null;
+  private syncPosted = false;
   constructor(
     private readonly now = () => performance.now(),
     private readonly post?: (callback: () => void) => void,
+    private readonly prioritized = false,
+    private readonly postSync = (callback: () => void) => queueMicrotask(callback),
   ) {}
 
   enqueue(job: SliceJob) {
     if (this.closed) throw new Error('Scheduler is disposed');
     if (!this.queued.has(job)) { this.queued.add(job); this.queue.push(job); }
+    if (this.prioritized && job.getPriority?.() === SyncLane && !this.syncPosted) {
+      this.syncPosted = true;
+      this.postSync(() => {
+        this.syncPosted = false;
+        if (this.closed) return;
+        while (this.queue.some((job) => job.getPriority?.() === SyncLane)) this.runNext(true);
+      });
+    }
     this.requestTask();
   }
   cancel(job: SliceJob) {
@@ -37,11 +49,20 @@ export class SliceScheduler {
   private flush() {
     this.posted = false;
     if (this.closed) return;
-    const job = this.queue.shift();
+    this.runNext(false);
+  }
+  private runNext(sync: boolean) {
+    let index = 0;
+    if (this.prioritized) {
+      for (let i = 1; i < this.queue.length; i++) {
+        if ((this.queue[i]!.getPriority?.() ?? DefaultLane) < (this.queue[index]!.getPriority?.() ?? DefaultLane)) index = i;
+      }
+    }
+    const job = this.queue.splice(index, 1)[0];
     if (!job) return;
     this.queued.delete(job);
     const deadline = this.now() + SLICE_MS;
-    try { if (job.runSlice(() => this.now() >= deadline)) this.enqueue(job); }
+    try { if (job.runSlice(() => !sync && this.now() >= deadline)) this.enqueue(job); }
     finally { this.requestTask(); }
   }
   dispose() {

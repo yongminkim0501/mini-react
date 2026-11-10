@@ -3,6 +3,7 @@ import { HTML_NAMESPACE } from '../core/vnode-to-dom/namespace';
 import type { Namespace } from '../core/vnode-to-dom/namespace';
 import type { PropsDiff } from '../core/diff/types';
 import type { EventHandler, PropValue } from '../runtime/types';
+import { runWithLane, SyncLane } from './lanes';
 
 const events = new WeakMap<Element, Map<string, EventHandler | undefined>>();
 function setEvent(element: Element, name: string, handler: EventHandler | undefined) {
@@ -10,7 +11,7 @@ function setEvent(element: Element, name: string, handler: EventHandler | undefi
   if (!table) events.set(element, table = new Map());
   const type = name.slice(2).toLowerCase();
   if (!table.has(type)) {
-    element.addEventListener(type, (event) => table!.get(type)?.call(element, event));
+    element.addEventListener(type, (event) => runWithLane(SyncLane, () => table!.get(type)?.call(element, event)));
   }
   table.set(type, handler);
 }

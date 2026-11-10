@@ -9,6 +9,7 @@
  */
 import { max, percentile, summarize } from './stats.js';
 import { splitLongFrame, summarizeLongFrames } from './loaf.js';
+import { latencySample, summarizeBreakdown } from './latency.js';
 export const METRICS_VERSION = 'B1.5-fixed-pre-run-loaf-v2';
 
 export const LONG_TASK_MS = 50;
@@ -78,6 +79,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
   let renderEndAt = null;
   let renderRoot = null;
   let renderAttempt = null;
+  let lastInteraction = null;
 
   // ── 프레임 간격 ──
   let lastFrame = null;
@@ -142,9 +144,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
    * 지연 한 건. main은 예정 시각 기준(없으면 실제 발사 시각 기준), event는 실제 발사 시각 기준.
    * 스크립트 이벤트는 dispatch 순간에 timeStamp가 찍혀 메인 스레드가 막혀 기다린 시간이 빠지기 때문이다.
    */
-  const latency = (p, now) => ({ main: now - (p.intendedAt ?? p.timeStamp), event: now - p.timeStamp });
-
-  function resolveInputs() {
+  function resolveInputs(commitAt) {
     if (pendingInputs.length === 0) return;
     const echo = getEchoText();
     const hit = pendingInputs.findIndex((p) => p.value === echo);
@@ -155,7 +155,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     const target = openSession();
     afterNextFrame((now) => {
       for (const p of done) {
-        const l = latency(p, now);
+        const l = latencySample(p, now, commitAt);
         liveInput.push(l.main);
         if (liveInput.length > 50) liveInput.shift();
         target?.input.push(l);
@@ -163,7 +163,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     });
   }
 
-  function resolveClicks() {
+  function resolveClicks(commitAt) {
     if (pendingClicks.length === 0) return;
     const seq = getSelectedSeq();
     const done = pendingClicks.filter((p) => seq >= p.expectedSeq);
@@ -171,7 +171,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     pendingClicks = pendingClicks.filter((p) => seq < p.expectedSeq);
     const target = openSession();
     afterNextFrame((now) => {
-      for (const p of done) target?.click.push(latency(p, now));
+      for (const p of done) target?.click.push(latencySample(p, now, commitAt));
     });
   }
 
@@ -190,7 +190,15 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     }
     if (event.label !== appLabel) return;
     if (event.type === 'renderSlice') {
-      openSession()?.renderSlices.push({ start: event.t - event.activeMs, duration: event.activeMs, attemptId: event.attemptId });
+      openSession()?.renderSlices.push({ start: event.t - event.activeMs, duration: event.activeMs, attemptId: event.attemptId, lane: event.lane });
+      return;
+    }
+    if (event.type === 'renderAbort') {
+      openSession()?.aborts.push({ t: event.t, attemptId: event.attemptId, lane: event.lane, activeMs: event.activeMs });
+      for (const p of [...pendingInputs,...pendingClicks]) {
+        if (p.attemptId === event.attemptId) { p.renderStartAt = null; p.attemptId = null; }
+      }
+      if (event.root === renderRoot && event.attemptId === renderAttempt) renderStartAt = renderEndAt = null;
       return;
     }
     if (event.type === 'renderStart') {
@@ -198,6 +206,11 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       renderEndAt = null;
       renderRoot = event.root;
       renderAttempt = event.attemptId;
+      if (event.lane === undefined || event.lane === 1) {
+        for (const p of [...pendingInputs,...pendingClicks]) {
+          if (p.renderStartAt == null && p.executedAt <= event.t) { p.renderStartAt = event.t; p.attemptId = event.attemptId; }
+        }
+      }
     } else if (event.type === 'renderEnd') {
       if (event.root !== renderRoot || event.attemptId !== renderAttempt) return;
       if (event.ok === false) { renderStartAt = renderEndAt = null; return; }
@@ -214,12 +227,24 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
           activeMs: event.activeMs ?? event.t - renderStartAt,
           patchCount: event.patchCount ?? 0,
           mounted: Boolean(event.mounted),
+          lane: event.lane,
+          renderActiveMs: event.renderActiveMs,
+          t: event.t,
         });
       }
       renderStartAt = null;
       renderEndAt = null;
-      resolveInputs();
-      resolveClicks();
+      resolveInputs(event.t);
+      resolveClicks(event.t);
+      if (event.idle !== false) {
+        const target = openSession();
+        if (target?.interactionEnd) {
+          target.lastIdleCommit = event.t;
+          afterNextFrame((frameAt) => {
+            if (target.lastIdleCommit === event.t) target.finalHeatmap = { commitAt:event.t, frameAt };
+          });
+        }
+      }
     }
   }
 
@@ -257,14 +282,23 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
      * @param {number | null} intendedAt 스크립트가 입력하려던 예정 시각. 사람 입력이면 null.
      */
     markInput(value, timeStamp, intendedAt = null) {
-      pendingInputs.push({ value, timeStamp, intendedAt });
+      const p = { value, timeStamp, intendedAt, executedAt:performance.now() };
+      pendingInputs.push(p); lastInteraction = p;
     },
 
     /** Each click requires its own sequence, even when several arrive before a Commit. */
     markClick(timeStamp, intendedAt = null) {
       const seqBefore = getSelectedSeq();
       const previousExpected = pendingClicks[pendingClicks.length - 1]?.expectedSeq ?? seqBefore;
-      pendingClicks.push({ seqBefore, expectedSeq: Math.max(seqBefore, previousExpected) + 1, timeStamp, intendedAt });
+      const p = { seqBefore, expectedSeq: Math.max(seqBefore, previousExpected) + 1, timeStamp, intendedAt, executedAt:performance.now() };
+      pendingClicks.push(p); lastInteraction = p;
+    },
+
+    markInteractionEnd(kind) {
+      if (openSession() && lastInteraction) session.interactionEnd = {
+        kind, at:performance.now(), lastEventAt:lastInteraction.executedAt,
+        plannedAt:lastInteraction.intendedAt ?? lastInteraction.timeStamp,
+      };
     },
 
     /** 기록 시작. 이전 기록과 대기 중인 입력은 버린다. */
@@ -273,6 +307,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       renderRoot = renderAttempt = null;
       pendingInputs = [];
       pendingClicks = [];
+      lastInteraction = null;
       session = {
         startedAt: performance.now(),
         preRunHz: refreshHz,
@@ -284,6 +319,9 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
         loafs: [],
         renderSlices: [],
         receivedUpdates: 0,
+        aborts: [],
+        interactionEnd: null,
+        finalHeatmap: null,
         input: [],
         click: [],
         updates: [],
@@ -361,6 +399,8 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
   const clickEvent = summarize(s.click.map((l) => l.event));
   const totals = summarize(updates.map((u) => u.total));
   const active = updates.map((u) => u.activeMs ?? u.total);
+  const syncUpdates = updates.filter((u) => u.lane === 1);
+  const abortedTransitions = (s.aborts ?? []).filter((u) => u.lane === 4);
   const sum = (values) => values.reduce((a, b) => a + b, 0);
   const loafs = (s.loafs ?? []).filter((f) => f.startTime + f.duration > s.startedAt && f.startTime <= endedAt && f.duration > LONG_TASK_MS)
     .map((f) => ({ ...f, windowOverlap: f.startTime < s.startedAt || f.startTime + f.duration > endedAt }));
@@ -405,6 +445,17 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
     updatesPerSecond: duration > 0 ? totals.count / duration * 1000 : NaN,
     updateWallTotalMs: sum(updates.map((u) => u.total)),
     activeTotalMs: sum(active),
+    allActiveTotalMs: sum(active) + sum((s.aborts ?? []).map((u)=>u.activeMs)),
+    abortedTransitionCount: abortedTransitions.length,
+    discardedTransitionMs: sum(abortedTransitions.map((u)=>u.activeMs)),
+    syncUpdateCount: syncUpdates.length,
+    syncRenderActiveMean: summarize(syncUpdates.map((u)=>u.renderActiveMs)).mean,
+    syncUpdateActiveMean: summarize(syncUpdates.map((u)=>u.activeMs)).mean,
+    syncCommitMean: summarize(syncUpdates.map((u)=>u.commit)).mean,
+    ...summarizeBreakdown(s.input,'input'),
+    ...summarizeBreakdown(s.click,'click'),
+    heatmapSettleMs: s.finalHeatmap && s.interactionEnd ? Math.max(0,s.finalHeatmap.frameAt - s.interactionEnd.at) : NaN,
+    heatmapFromLastEventMs: s.finalHeatmap && s.interactionEnd ? s.finalHeatmap.frameAt - s.interactionEnd.lastEventAt : NaN,
     updateMean: totals.mean,
     activeMean: summarize(active).mean,
     updateP95: totals.p95,
@@ -424,6 +475,7 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
       startedAt: s.startedAt, endedAt, frames: s.frames, frameEnds: s.frameEnds,
       progressCommits: s.progressCommits, updates: s.updates, input: s.input, click: s.click,
       longTasks: tasks, loafs, renderSlices: s.renderSlices ?? [],
+      aborts:s.aborts ?? [], interactionEnd:s.interactionEnd, finalHeatmap:s.finalHeatmap,
     },
   };
 }

@@ -19,9 +19,11 @@ export function commitRoot(root: RenderHost) {
   }
   for (const hook of next.hooks) {
     if (hook.kind === 'state') {
-      hook.queue.pending.splice(0, hook.consumed);
+      if (root.laneAware) hook.queue.updates.splice(0, hook.consumed);
+      else hook.queue.pending.splice(0, hook.consumed);
       hook.queue.value = hook.value;
       hook.queue.active = true;
+      hook.queue.hasBase = hook.baseQueue.length > 0;
     }
   }
   root.current = next;

@@ -48,7 +48,7 @@ npm run dev
 
 | 이름 | 기본값 | 설명 |
 |------|--------|------|
-| `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber`. `stack`·`fiber-sync`·`fiber-slice`를 지원하며 `fiber`는 "not implemented" 오류를 화면에 띄운다. |
+| `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber`. `stack`·`fiber-sync`·`fiber-slice`·`fiber`를 지원한다. |
 | `engines` | 없음 | `stack,fiber-sync,fiber-slice`처럼 여러 개를 주면 실행 단위로 번갈아 측정한다. 구현되지 않은 모드는 건너뛰고 결과의 `skippedEngines`에 남긴다. `engine`보다 우선한다. |
 | `size` | `20000` | 셀 수. 2,000~20,000, 1,000 단위다(100분 × 서버 행). |
 | `seed` | `42` | 데이터·클릭 대상 시드. 모든 무작위성은 이 시드를 쓰는 mulberry32를 거친다. |
@@ -126,3 +126,7 @@ LoAF의 `renderStart`는 rAF 콜백을 포함한 렌더링 시작, `styleAndLayo
 ### 녹화
 
 README용 녹화는 **1280×720 창**에서 `?hud=record`로 한다. HUD는 이 크기에서 숫자가 잘리지 않게 한 줄로 배치했다(엔진·시나리오·주사율 | 프레임 그래프 | 최장 Long Task·입력 지연 p95·수신 표시 fps).
+
+### B-3 추가 진단 지표
+
+기존 고정 예산·LoAF·총 지연 정의는 유지한다. S2/S3은 예정 시각→실제 이벤트 실행→처리 렌더 시작→커밋→다음 rAF의 각 구간 p95를 추가한다. fiber에서는 Sync 렌더를 연결하며, 다른 엔진은 입력을 처리한 렌더를 연결한다. 각 구간의 p95 합은 전체 지연 p95와 같을 필요가 없다. Sync Render 작업 시간은 DOM Commit을 제외한 루트 실행·전체 재조정 비용이다. 폐기 Transition 수·작업 시간은 커밋된 작업 비용과 따로 기록하고 allActiveTotalMs에는 둘을 합친다. 마지막 입력/클릭 발사 직후부터 최종 heatmap idle Commit 다음 rAF까지를 heatmapSettleMs로 기록한다. 이것은 실제 물리적 paint 완료의 근사치다.

@@ -35,4 +35,5 @@ it('same heatmap inputs, regeneration, selection, SLO and resize produce identic
   const baseline = await run('stack');
   expect(await run('fiber-sync')).toEqual(baseline);
   expect(await run('fiber-slice')).toEqual(baseline);
+  expect(await run('fiber')).toEqual(baseline);
 }, 20000);

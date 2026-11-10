@@ -7,7 +7,8 @@ import { gzipSync } from 'node:zlib';
 import { execFileSync } from 'node:child_process';
 
 const isB2 = process.argv.includes('--b2');
-const engines = isB2 ? ['stack', 'fiber-sync', 'fiber-slice'] : ['stack', 'fiber-sync'];
+const isB3 = process.argv.includes('--b3');
+const engines = isB3 ? ['stack','fiber-slice','fiber'] : isB2 ? ['stack', 'fiber-sync', 'fiber-slice'] : ['stack', 'fiber-sync'];
 const output = process.argv[2] ?? '/private/tmp/fiber-b1-results';
 const provenance = {
   codeCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
@@ -74,11 +75,11 @@ try {
   }
   const lab = await evaluate('JSON.parse(JSON.stringify(window.__lab))');
   if (!lab?.done) throw new Error('Benchmark timeout');
-  await writeFile(`${output}/${isB2 ? 'fiber-slice' : 'fiber-sync'}-cross.json`, JSON.stringify({ ...lab, provenance }, null, 2));
+  await writeFile(`${output}/${isB3 ? 'fiber' : isB2 ? 'fiber-slice' : 'fiber-sync'}-cross.json`, JSON.stringify({ ...lab, provenance }, null, 2));
   console.log(JSON.stringify(lab.results.map((r) => ({ scenario: r.scenario, engine: r.engine, update: r.average.updateMean, longest: r.average.longTaskMax }))));
   const traceInfo = [];
-  for (const mode of isB2 ? ['stack', 'fiber-slice'] : ['stack', 'fiber-sync']) {
-    for (const scenario of isB2 ? ['S2', 'S4'] : ['S2']) {
+  for (const mode of isB3 ? ['fiber'] : isB2 ? ['stack', 'fiber-slice'] : ['stack', 'fiber-sync']) {
+    for (const scenario of isB2 || isB3 ? ['S2', 'S4'] : ['S2']) {
       await navigate(`engine=${mode}&size=20000&seed=42&cellCost=0`);
       await delay(3500);
       if (scenario === 'S2') {
@@ -91,8 +92,8 @@ try {
         categories: 'devtools.timeline,disabled-by-default-devtools.timeline,blink.user_timing,v8.execute',
         transferMode: 'ReturnAsStream',
       });
-      const markerStart = isB2 ? `B2-${scenario}-start` : 'B1-input-start';
-      const markerEnd = isB2 ? `B2-${scenario}-end` : 'B1-input-end';
+      const markerStart = isB3 ? `B3-${scenario}-start` : isB2 ? `B2-${scenario}-start` : 'B1-input-start';
+      const markerEnd = isB3 ? `B3-${scenario}-end` : isB2 ? `B2-${scenario}-end` : 'B1-input-end';
       await evaluate(`performance.mark('${markerStart}')`);
       if (scenario === 'S2') {
         await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'd', code: 'KeyD', text: 'd', unmodifiedText: 'd', windowsVirtualKeyCode: 68 });
@@ -114,6 +115,38 @@ try {
       traceInfo.push({ mode, scenario, filename, markerStart, markerEnd, seedBefore, environment });
       console.log(`Saved ${filename}`);
     }
+  }
+  if (isB3) {
+    const diagnostic = [];
+    for (const [mode, action] of [['fiber-slice','progress-only'],['fiber','progress-only'],['fiber-slice','one-receive']]) {
+      await navigate(`engine=${mode}&size=20000&seed=42&cellCost=0`);
+      await evaluate('__lab.waitForIdle()'); await delay(1500);
+      await send('DOM.enable');
+      const { root } = await send('DOM.getDocument', { depth: 0 });
+      const nodeMap = [{selector:'#document',backendNodeId:root.backendNodeId}];
+      for (const selector of ['html','body','#app-root','#heatmap','#progress-root','.progress','.progress-thumb']) {
+        const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector });
+        const { node } = await send('DOM.describeNode', { nodeId });
+        const { model } = await send('DOM.getBoxModel', { nodeId });
+        nodeMap.push({ selector, backendNodeId: node.backendNodeId, box: model.border });
+      }
+      await evaluate(`(()=>{window.__diag={heatmap:0,progress:0};window.__diagObservers=['heatmap','progress'].map(key=>{const observer=new MutationObserver(records=>{__diag[key]+=records.length;performance.mark('diag-'+key+'-mutation');});observer.observe(document.querySelector(key==='heatmap'?'#heatmap':'#progress-root'),{subtree:true,attributes:true,childList:true,characterData:true});return observer;});})()`);
+      await send('Tracing.start', { categories:'devtools.timeline,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.invalidationTracking,blink.user_timing,v8.execute', transferMode:'ReturnAsStream' });
+      await evaluate(`__diag.heatmap=0;__diag.progress=0;performance.mark('diag-start')`);
+      if (action === 'one-receive') await evaluate(`(async()=>{document.querySelector('#regen').click();await __lab.waitForIdle();})()`);
+      else await delay(600);
+      const mutations=await evaluate(`(()=>{performance.mark('diag-end');for(const observer of __diagObservers)observer.disconnect();return __diag;})()`);
+      const completed = once('Tracing.tracingComplete'); await send('Tracing.end');
+      const {stream} = await completed;
+      let raw='';
+      for (;;) { const chunk=await send('IO.read',{handle:stream}); raw+=chunk.base64Encoded?Buffer.from(chunk.data,'base64').toString():chunk.data;if(chunk.eof)break; }
+      await send('IO.close',{handle:stream});
+      const filename=`diagnostic-${mode}-${action}.trace.json.gz`;
+      await writeFile(`${output}/${filename}`,gzipSync(raw));
+      diagnostic.push({mode,action,filename,nodeMap,mutations,markerStart:'diag-start',markerEnd:'diag-end'});
+      console.log(`Saved ${filename}`);
+    }
+    await writeFile(`${output}/diagnostic-info.json`,JSON.stringify(diagnostic,null,2));
   }
   await writeFile(`${output}/trace-info.json`, JSON.stringify(traceInfo, null, 2));
 } finally { socket.close(); }

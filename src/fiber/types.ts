@@ -1,6 +1,7 @@
 import type { Child, Component, ElementProps, HNode } from '../runtime/types';
 import type { Namespace } from '../core/vnode-to-dom/namespace';
 import type { PropsDiff } from '../core/diff/types';
+import type { StateUpdate } from './updateQueue';
 
 export type Action = unknown | ((previous: any) => unknown);
 export interface StateQueue {
@@ -8,10 +9,12 @@ export interface StateQueue {
   value: unknown;
   active: boolean;
   set: (action: Action) => void;
+  updates: StateUpdate[];
+  hasBase: boolean;
 }
 export interface EffectCell { cleanup: (() => void) | undefined }
 export type Hook =
-  | { kind: 'state'; value: unknown; queue: StateQueue; consumed: number }
+  | { kind: 'state'; value: unknown; queue: StateQueue; consumed: number; baseState: unknown; baseQueue: StateUpdate[] }
   | { kind: 'memo'; value: unknown; deps: readonly unknown[] | undefined }
   | { kind: 'effect'; deps: readonly unknown[] | undefined; cell: EffectCell };
 export interface PassiveEffect { cell: EffectCell; create: () => void | (() => void) }
@@ -54,7 +57,7 @@ export interface FiberNode {
   propsDiff: PropsDiff | null;
 }
 export interface EngineEvent {
-  type: 'renderStart' | 'renderEnd' | 'commit' | 'renderError' | 'renderSlice';
+  type: 'renderStart' | 'renderEnd' | 'commit' | 'renderError' | 'renderSlice' | 'renderAbort';
   root: object;
   label: string;
   t: number;
@@ -64,6 +67,9 @@ export interface EngineEvent {
   patchCount?: number;
   /** Sum of work intervals excluding yielded time, not OS/thread CPU accounting. */
   activeMs?: number;
+  lane?: number;
+  renderActiveMs?: number;
+  idle?: boolean;
 }
 export interface RenderHost {
   component: (props: any) => Child;
@@ -72,9 +78,11 @@ export interface RenderHost {
   workInProgress: FiberNode | null;
   rendering: boolean;
   alive: boolean;
+  laneAware: boolean;
+  renderLane: number;
   effects: PassiveEffect[];
   placements: FiberNode[];
   updates: FiberNode[];
   deletions: FiberNode[];
-  schedule(): boolean;
+  schedule(lane?: number): boolean;
 }

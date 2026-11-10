@@ -24,6 +24,7 @@ export function createScenarioContext({ metrics, seed }) {
   return {
     sleep,
     sleepUntil,
+    markInteractionEnd: (kind) => metrics.markInteractionEnd?.(kind),
 
     /** 새 데이터 수신 버튼 클릭 */
     regenerate() {
@@ -94,6 +95,7 @@ export const SCENARIOS = {
         await ctx.sleepUntil(at);
         ctx.typeValue(TYPING_TEXT.slice(0, i + 1), at);
       }
+      ctx.markInteractionEnd('input');
       await ctx.sleep(1000);
     },
   },
@@ -108,6 +110,7 @@ export const SCENARIOS = {
         await ctx.sleepUntil(at);
         ctx.clickRandomCell(at);
       }
+      ctx.markInteractionEnd('click');
       await ctx.sleep(1000);
     },
   },
