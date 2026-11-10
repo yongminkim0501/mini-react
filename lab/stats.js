@@ -60,6 +60,7 @@ export function averageRuns(runs) {
   const result = {};
   if (runs.length === 0) return result;
   for (const key of Object.keys(runs[0])) {
+    if (!runs.some((r) => typeof r[key] === 'number')) continue;
     const values = runs.map((r) => r[key]).filter((v) => typeof v === 'number' && !Number.isNaN(v));
     result[key] = values.length ? mean(values) : NaN;
   }

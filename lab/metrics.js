@@ -8,6 +8,8 @@
  * - getEchoText/getSelectedSeq: 커밋 직후 실제 DOM을 읽어 입력·클릭이 반영됐는지 확인한다.
  */
 import { max, percentile, summarize } from './stats.js';
+import { splitLongFrame, summarizeLongFrames } from './loaf.js';
+export const METRICS_VERSION = 'B1.5-fixed-pre-run-loaf';
 
 export const LONG_TASK_MS = 50;
 /** 끊긴 프레임 = 프레임 예산의 이 배수 + JANK_TOLERANCE_MS 초과 */
@@ -84,7 +86,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       const gap = t - lastFrame;
       liveFrames.push(gap);
       if (liveFrames.length > LIVE_FRAMES) liveFrames.shift();
-      if (session && !session.closed) {
+      if (session && !session.closed && lastFrame >= session.startedAt) {
         session.frames.push(gap);
         session.frameEnds.push(t);
       }
@@ -118,6 +120,19 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
   } catch {
     longTaskSupported = false;
   }
+
+  let longAnimationFrameSupported = false;
+  try {
+    if (PerformanceObserver.supportedEntryTypes?.includes('long-animation-frame')) {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.duration > LONG_TASK_MS) session?.loafs.push(splitLongFrame(entry));
+        }
+      });
+      observer.observe({ type: 'long-animation-frame' });
+      longAnimationFrameSupported = true;
+    }
+  } catch { longAnimationFrameSupported = false; }
 
   // ── 반영 확인 후 첫 rAF까지 기다렸다 기록 ──
   const afterNextFrame = (fn) => requestAnimationFrame(() => fn(performance.now()));
@@ -174,6 +189,10 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       return;
     }
     if (event.label !== appLabel) return;
+    if (event.type === 'renderSlice') {
+      openSession()?.renderSlices.push({ start: event.t - event.activeMs, duration: event.activeMs, attemptId: event.attemptId });
+      return;
+    }
     if (event.type === 'renderStart') {
       renderStartAt = event.t;
       renderEndAt = null;
@@ -191,8 +210,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
           render: renderEndAt - renderStartAt,
           commit: event.t - renderEndAt,
           total: event.t - renderStartAt,
-          // Both implemented engines run without yielding. This is elapsed JS work,
-          // not OS CPU accounting. Fiber supplies the measured active interval.
+          // Fiber excludes yielded time. Active JS elapsed time, not OS CPU accounting.
           activeMs: event.activeMs ?? event.t - renderStartAt,
           patchCount: event.patchCount ?? 0,
           mounted: Boolean(event.mounted),
@@ -207,6 +225,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
 
   return {
     longTaskSupported,
+    longAnimationFrameSupported,
     onEngineEvent,
 
     /**
@@ -254,10 +273,15 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       pendingClicks = [];
       session = {
         startedAt: performance.now(),
+        preRunHz: refreshHz,
+        preRunBudgetMs: frameBudgetMs(refreshHz),
         closed: false,
         frames: [],
         frameEnds: [],
         longTasks: [],
+        loafs: [],
+        renderSlices: [],
+        receivedUpdates: 0,
         input: [],
         click: [],
         updates: [],
@@ -276,10 +300,14 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       if (!current) throw new Error('기록 중이 아닙니다');
       const endedAt = performance.now();
       current.closed = true;
+      current.pendingInputCount = pendingInputs.length;
+      current.pendingClickCount = pendingClicks.length;
       await new Promise((r) => setTimeout(r, 200));
       session = null;
-      return summarizeSession(current, endedAt, longTaskSupported, frameBudgetMs(refreshHz));
+      return summarizeSession(current, endedAt, longTaskSupported, current.preRunBudgetMs, longAnimationFrameSupported);
     },
+
+    markRegenerate() { if (openSession()) session.receivedUpdates++; },
 
     /** HUD용 실시간 값 */
     live() {
@@ -303,16 +331,20 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
  * @param {any} s
  * @param {number} endedAt
  * @param {boolean} longTaskSupported
- * @param {number} budgetMs 실행 전 추정으로 정한 프레임 예산. 실행 중 관측이 불가능할 때만 쓴다.
+ * @param {number} budgetMs 실행 전 추정으로 고정한 프레임 예산.
+ * @param {boolean} [loafSupported]
  */
-export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
+export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSupported = false) {
   const duration = endedAt - s.startedAt;
-  // 실행 중 주사율이 바뀔 수 있으므로(절전으로 120→60→30Hz) 이 실행의 프레임 간격 중앙값으로 예산을 정한다.
-  // 긴 프레임은 시간은 많이 차지해도 개수는 적어 중앙값을 끌어내리지 못한다. 프레임이 없으면 실행 전 추정을 쓴다.
+  // Diagnostic only: workload can lower rAF cadence without a display change.
   const observedHz = estimateRefreshHz(s.frames, Infinity);
   // 가장 조용한 30프레임 구간 기준 주사율. 중앙값 기준과 다르면 실행 도중 주사율이 바뀐 것이다.
   const quietestHz = estimateRefreshHz(s.frames);
-  const runBudgetMs = Number.isFinite(observedHz) ? frameBudgetMs(observedHz) : budgetMs;
+  const runBudgetMs = budgetMs;
+  const preRunHz = s.preRunHz ?? 1000 / budgetMs;
+  const refreshUnstable = Number.isFinite(observedHz) && (
+    Math.abs(observedHz - preRunHz) > 3 || Number.isFinite(quietestHz) && Math.abs(observedHz - quietestHz) > 3
+  ) ? 1 : 0;
   const jankMs = runBudgetMs * JANK_FACTOR + JANK_TOLERANCE_MS;
   const tasks = s.longTasks.filter((t) => t.start >= s.startedAt && t.start <= endedAt);
   const updates = s.updates.filter((u) => !u.mounted);
@@ -324,15 +356,25 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
   const click = summarize(s.click.map((l) => l.main));
   const clickEvent = summarize(s.click.map((l) => l.event));
   const totals = summarize(updates.map((u) => u.total));
+  const active = updates.map((u) => u.activeMs ?? u.total);
+  const sum = (values) => values.reduce((a, b) => a + b, 0);
+  const loafs = (s.loafs ?? []).filter((f) => f.startTime >= s.startedAt && f.startTime <= endedAt && f.duration > LONG_TASK_MS);
+  const warnings = [];
+  if (isNon60Hz(preRunHz)) warnings.push('pre-run-not-60Hz');
+  if (refreshUnstable) warnings.push('in-run-refresh-unstable');
+  if (!Number.isFinite(observedHz)) warnings.push('no-frame-samples');
 
   return {
+    metricsVersion: METRICS_VERSION,
+    preRunHz,
+    warnings,
     durationMs: duration,
     /** 끊김 판정에 쓴 프레임 예산 */
     frameBudgetMs: runBudgetMs,
-    /** 이 실행의 프레임 간격 중앙값으로 추정한 주사율. 끊김 판정 기준이다. */
+    /** 진단값만. 끊김 예산을 바꾸지 않는다. */
     refreshHzObserved: observedHz,
     /** 가장 조용한 구간 기준 주사율과 3Hz 넘게 다르면 1 (실행 도중 주사율 변경). 평균하면 그런 실행의 비율이 된다. */
-    refreshUnstable: Number.isFinite(observedHz) && Number.isFinite(quietestHz) && Math.abs(observedHz - quietestHz) > 3 ? 1 : 0,
+    refreshUnstable,
     /** 실행 시작 전 추정으로 정한 예산 (비교용) */
     preRunBudgetMs: budgetMs,
     frameP50: frames.p50,
@@ -354,8 +396,12 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
     clickMax: click.max,
     clickEventP95: clickEvent.p95,
     updateCount: totals.count,
+    receivedUpdates: s.receivedUpdates ?? 0,
+    updatesPerSecond: duration > 0 ? totals.count / duration * 1000 : NaN,
+    updateWallTotalMs: sum(updates.map((u) => u.total)),
+    activeTotalMs: sum(active),
     updateMean: totals.mean,
-    activeMean: summarize(updates.map((u) => u.activeMs ?? u.total)).mean,
+    activeMean: summarize(active).mean,
     updateP95: totals.p95,
     updateMax: totals.max,
     renderMean: summarize(updates.map((u) => u.render)).mean,
@@ -364,5 +410,15 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
     progressFps: duration > 0 ? (s.progressCommits.length / duration) * 1000 : NaN,
     progressDropped: progressGaps.filter((g) => g > jankMs).length,
     progressGapMax: max(progressGaps),
+    ...summarizeLongFrames(loafs, loafSupported),
+    renderSliceMax: s.renderSlices?.length ? max(s.renderSlices.map((f) => f.duration)) : NaN,
+    renderJsLongSliceCount: s.renderSlices?.filter((f) => f.duration > LONG_TASK_MS).length ?? NaN,
+    pendingInputCount: s.pendingInputCount ?? 0,
+    pendingClickCount: s.pendingClickCount ?? 0,
+    raw: {
+      startedAt: s.startedAt, endedAt, frames: s.frames, frameEnds: s.frameEnds,
+      progressCommits: s.progressCommits, updates: s.updates, input: s.input, click: s.click,
+      longTasks: tasks, loafs, renderSlices: s.renderSlices ?? [],
+    },
   };
 }

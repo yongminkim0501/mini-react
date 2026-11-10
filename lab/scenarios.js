@@ -27,6 +27,7 @@ export function createScenarioContext({ metrics, seed }) {
 
     /** 새 데이터 수신 버튼 클릭 */
     regenerate() {
+      metrics.markRegenerate?.();
       /** @type {HTMLButtonElement} */ (byId('regen')).click();
     },
 
