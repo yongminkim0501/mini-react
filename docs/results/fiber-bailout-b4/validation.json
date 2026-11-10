@@ -1,0 +1,100 @@
+{
+  "configurations": 24,
+  "runs": 72,
+  "pendingInteractions": [],
+  "counterInvariantFailures": [],
+  "abortedDomWriteFailures": [],
+  "cachedS2SyncInternalNonzero": [],
+  "refreshWarnings": [
+    [
+      "S2",
+      "current",
+      "fiber",
+      1,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S3",
+      "current",
+      "fiber",
+      1,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S3",
+      "current",
+      "fiber-bailout",
+      2,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "current",
+      "stack",
+      1,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "current",
+      "stack",
+      2,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "current",
+      "stack",
+      3,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "cached",
+      "stack",
+      1,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "cached",
+      "stack",
+      2,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "cached",
+      "stack",
+      3,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ],
+    [
+      "S4",
+      "cached",
+      "fiber",
+      1,
+      [
+        "in-run-refresh-unstable"
+      ]
+    ]
+  ]
+}

@@ -442,3 +442,11 @@
 
 - **결정:** 네 전제 테스트를 두 모드에 유지한다. 네 번 적중 후 첫 미스의 깊은 텍스트·삽입·삭제와 핸들러, 중첩 기록, key 전달, fallback·위치 이동·부모 이동, 불변성 계약 짝을 검증한다. 고정 seed 스크립트는 적용된 상태 버전의 독립 DOM/title oracle에 매 Commit을 대조한다. passive effect는 Commit 이벤트 뒤에 등록되므로 테스트는 이벤트 다음 테스트 microtask에서 drain한다.
 - **결정:** 20k S1~S4에서 current/stack → current/fiber → current/fiber-bailout → cached/stack → cached/fiber → cached/fiber-bailout 순서를 실행마다 반복한다. 조합별 워밍업 1회를 버리고 3회 잰다. B-3 시간 지표 정의를 유지한다. 과거 B-3과 직접 비율을 만들지 않는다.
+
+### B39 · 2026-11-10 · B-4 실측과 생략 비용 공개
+
+- **자료:** 코드 `9b3084e`의 깨끗한 작업 트리에서 6개 조합, 20k S1~S4, 조합별 워밍업 1회 제외 3회(본 측정 72회)를 교차 측정했다. [보고서](codex/B4-fiber-bailout.md), 원자료, 모든 카운터 CSV와 검증 JSON을 보존했다. `node lab/dev/summarize-bailout.mjs <raw.json> <output-dir>`로 카운터·불변식을 재산출한다. 이 도구와 같은 셀 재클릭 테스트 보강은 측정 뒤 추가했으며 측정된 엔진·앱 코드는 바꾸지 않았다.
+- **관측:** cached 앱의 fiber→fiber-bailout에서 S2 Sync Render 작업 76.435→0.225ms, 입력 p95 111.5→27.5ms였다. 57개 Sync Commit에서 Heatmap 내부 함수·Render·Commit·DOM 작업이 0이고 경계는 각 1회 적중했다. 입력 종료 후 최종 히트맵은 340.8→452.2ms로 늦어졌고 폐기 작업은 360.2→1,628.7ms(3회 합계)로 증가했다. 폐기 포함 전체 작업 합계는 실행당 1,702.3→686.0ms였다.
+- **비용:** current 앱의 적중은 전 시나리오 0, cached S3도 적중 0이다. S3 Sync Render는 76.0→87.3ms, 클릭 p95는 102.2→112.5ms였다. S1·S4 커밋당 작업은 약 8.5~10.5% 증가했다. S4 cached 진행 바 33.6→35.6fps와 커밋 14.3→12.7회/실행을 함께 보고하며 처리량 개선으로 해석하지 않는다.
+- **계측 한계:** 사전 72회 모두 60Hz지만 실행 중 rAF 진단값 저하 경고 10건을 보존했다. 물리 디스플레이 변경으로 단정하거나 예산을 다시 정하지 않는다. S2 cached 비교에는 경고가 없었다. 미완료 입력/클릭·카운터 합계 불일치·폐기 attempt의 live DOM 쓰기는 0이다. 세부 카운터는 heatmap 루트 기준이며 ProgressApp은 fps로 별도 기록한다. stack 카운터는 N/A다.
+- **종료:** B-4에서 멈춘다. 행 캐시·같은 셀 좌표 고정·key 비교·shallow props 비교는 구현하지 않았다. push/PR은 하지 않는다.

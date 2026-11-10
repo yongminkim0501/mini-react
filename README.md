@@ -48,7 +48,7 @@ npm run dev
 
 | 이름 | 기본값 | 설명 |
 |------|--------|------|
-| `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber`. `stack`·`fiber-sync`·`fiber-slice`·`fiber`·`fiber-bailout`을 지원한다. |
+| `engine` | `stack` | `stack` \| `fiber-sync` \| `fiber-slice` \| `fiber` \| `fiber-bailout`. `stack`·`fiber-sync`·`fiber-slice`·`fiber`·`fiber-bailout`을 지원한다. |
 | `app` / `apps` | `current` | `cached`는 승인된 두 useMemo를 켠다. `apps=current,cached`는 모든 앱×엔진 조합을 실행마다 교차 측정한다. |
 | `engines` | 없음 | `stack,fiber-slice,fiber`처럼 여러 개를 주면 실행 단위로 번갈아 측정한다. 구현되지 않은 모드는 건너뛰고 결과의 `skippedEngines`에 남긴다. `engine`보다 우선한다. |
 | `size` | `20000` | 셀 수. 2,000~20,000, 1,000 단위다(100분 × 서버 행). |
@@ -138,7 +138,7 @@ README용 녹화는 **1280×720 창**에서 `?hud=record`로 한다. HUD는 이 
 
 fiber-bailout은 같은 host 부모·확장 경로·출력 인덱스의 VComponent 객체가 동일하고 단일 host를 반환할 때만 생략한다. 자식은 순수 함수여야 하며 중첩 데이터를 제자리 수정한 같은 VNode는 이전 화면을 유지한다. 새 VNode를 전달하면 갱신된다. 행 캐시·key 매칭·prop별 얕은 비교는 없다.
 
-각 Commit과 폐기 attempt의 `counters`를 원자료에 보존한다. `counterTotals`/`counterSync`/`counterAborted`는 각각 커밋 합계/Sync 합계/폐기 합계이며 total=inside+outside다. stack은 계측 금지 범위를 유지하므로 카운터는 null(N/A)이다. 수치는 합계이며 시간 평균과 섞지 않는다.
+측정 JSON은 heatmap 루트의 각 Commit과 폐기 attempt의 `counters`를 보존한다. 별도 ProgressApp 루트는 fps로 기록한다. `counterTotals`/`counterSync`/`counterAborted`는 각각 커밋 합계/Sync 합계/폐기 합계이며 total=inside+outside다. stack은 계측 금지 범위를 유지하므로 카운터는 null(N/A)이다. 수치는 합계이며 시간 평균과 섞지 않는다.
 
 - rootCalls/childCalls: 루트/순수 자식 호출. Heatmap 함수 자체는 inside, 그 host 경계 헤더는 outside, 하위 자손은 inside다.
 - renderFiberVisits: beginWork 또는 재사용 헤더 진입 수. renderWorkUnits는 단계 반복 수다.
@@ -147,3 +147,5 @@ fiber-bailout은 같은 host 부모·확장 경로·출력 인덱스의 VCompone
 - bailoutHits/Misses와 미스 이유(different VComponent / different position / fallback shape)를 기록한다. 초기 등록도 miss이며 측정 창 밖 마운트는 요약에서 제외한다. 같은 객체를 다른 host 부모로 옮기면 그 부모에는 기록이 없으므로 different VComponent(이전 경계 없음)로 집계한다.
 
 지표 시간 정의는 B-3과 같다. 경계 캐시·카운터 계측 비용을 포함한 이번 세션 안에서 비교하며 과거 B-3 숫자와 직접 성능비를 만들지 않는다.
+
+B-4 실측과 앱 변경 diff 전문은 [B-4 보고서](docs/codex/B4-fiber-bailout.md)에 있다. 보존된 원자료의 모든 카운터와 불변식은 `node lab/dev/summarize-bailout.mjs docs/results/fiber-bailout-b4/fiber-bailout-cross.json docs/results/fiber-bailout-b4`로 재집계할 수 있다.
