@@ -147,6 +147,14 @@ describe('주사율과 프레임 예산', () => {
     expect(estimateRefreshHz([])).toBeNaN();
   });
 
+  it('느린 구간이 섞여도 가장 조용한 구간으로 추정한다', () => {
+    // 앞 30개는 마운트 직후라 33ms, 뒤 30개는 평소 16.7ms
+    const intervals = [...Array(30).fill(33.4), ...Array(30).fill(16.7)];
+    expect(estimateRefreshHz(intervals)).toBe(60);
+    // 전체 중앙값만 쓰면 30Hz로 잘못 나온다 (회귀 방지용 대조)
+    expect(Math.round(1000 / 33.4)).toBe(30);
+  });
+
   it('예산과 60Hz 경고', () => {
     expect(frameBudgetMs(60)).toBeCloseTo(16.67, 1);
     expect(frameBudgetMs(120)).toBeCloseTo(8.33, 1);

@@ -17,13 +17,24 @@ export const DEFAULT_HZ = 60;
 const LIVE_FRAMES = 180;
 
 /**
- * rAF 간격 중앙값으로 주사율을 추정한다. 순수 함수.
+ * rAF 간격으로 주사율을 추정한다. 순수 함수.
+ * 간격을 window개씩 나눠 구간별 중앙값을 구하고 그중 가장 작은 값을 쓴다.
+ * 프레임은 주사율보다 빨리 올 수 없고, 느린 프레임(마운트·레이아웃)은 간격을 늘리기만 하므로
+ * 가장 조용한 구간이 실제 주사율에 가장 가깝다.
  * @param {readonly number[]} intervals ms
+ * @param {number} [window] 구간 크기
  * @returns {number} Hz (정수). 표본이 없으면 NaN.
  */
-export function estimateRefreshHz(intervals) {
-  const median = percentile(intervals, 50);
-  return Number.isFinite(median) && median > 0 ? Math.round(1000 / median) : NaN;
+export function estimateRefreshHz(intervals, window = 30) {
+  if (intervals.length === 0) return NaN;
+  let best = Infinity;
+  for (let i = 0; i < intervals.length; i += window) {
+    const chunk = intervals.slice(i, i + window);
+    // 마지막 조각이 너무 작으면 잡음이 크므로 첫 구간이 아닐 때는 버린다.
+    if (i > 0 && chunk.length < window / 2) continue;
+    best = Math.min(best, percentile(chunk, 50));
+  }
+  return Number.isFinite(best) && best > 0 ? Math.round(1000 / best) : NaN;
 }
 
 /** 주사율 → 프레임 예산(ms) */
@@ -187,10 +198,10 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     onEngineEvent,
 
     /**
-     * 다음 count개 rAF 간격의 중앙값으로 주사율을 추정해 저장한다.
+     * 다음 count개 rAF 간격으로 주사율을 추정해 저장한다(estimateRefreshHz).
      * @param {number} [count]
      */
-    calibrateRefresh(count = 90) {
+    calibrateRefresh(count = 120) {
       return new Promise((resolve) => {
         frameWaiters.push({
           count,
