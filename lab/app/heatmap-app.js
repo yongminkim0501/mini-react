@@ -240,7 +240,7 @@ export function createHeatmapApp(engine) {
           seed,
           onSlo: setSlo,
           onSize: (n) => setSize(clampSize(n)),
-          onRegenerate: () => setSeed((s) => s + 1),
+          onRegenerate: () => startTransition(() => setSeed((s) => s + 1)),
         }),
       ),
       h(
