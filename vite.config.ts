@@ -7,11 +7,12 @@ export default defineConfig({
       input: {
         main: 'index.html',
         phase2: 'phase2/index.html',
+        labHeatmap: 'lab/pages/heatmap.html',
       },
     },
   },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.ts', 'phase2/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'phase2/**/*.test.ts', 'lab/**/*.test.js'],
   },
 });

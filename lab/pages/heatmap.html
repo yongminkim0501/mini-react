@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>히트맵 탐색기 · mini-react lab</title>
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="../../">← Phase 1 검증 페이지</a>
+      <span>엔진 <b id="engine-name">-</b> · <span id="param-summary"></span></span>
+    </nav>
+
+    <!-- 엔진이 그리는 영역 -->
+    <div id="progress-root" class="progress-root"></div>
+    <div id="app-root"></div>
+
+    <!-- 엔진 밖 (Vanilla DOM): 측정 패널 -->
+    <section class="lab-panel" aria-label="측정">
+      <h2>측정</h2>
+      <div class="lab-controls">
+        <select id="scenario-select"></select>
+        <label>반복 <input id="runs-input" type="number" min="1" max="20" /></label>
+        <button id="run-button" type="button">실행</button>
+        <button id="download-button" type="button">JSON 내려받기</button>
+        <span id="run-status">대기</span>
+      </div>
+      <div id="results"></div>
+    </section>
+    <pre id="fatal" class="fatal" hidden></pre>
+
+    <script type="module" src="../main.js"></script>
+  </body>
+</html>
