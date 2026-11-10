@@ -74,6 +74,8 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
   let pendingClicks = [];
   let renderStartAt = null;
   let renderEndAt = null;
+  let renderRoot = null;
+  let renderAttempt = null;
 
   // ── 프레임 간격 ──
   let lastFrame = null;
@@ -160,7 +162,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
 
   /**
    * 어댑터 계측 이벤트
-   * @param {{ type: string, label: string, t: number, patchCount?: number, mounted?: boolean }} event
+   * @param {{ type: string, label: string, t: number, patchCount?: number, mounted?: boolean, root?: object, attemptId?: number, ok?: boolean, activeMs?: number }} event
    */
   function onEngineEvent(event) {
     if (event.label === progressLabel) {
@@ -175,15 +177,23 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     if (event.type === 'renderStart') {
       renderStartAt = event.t;
       renderEndAt = null;
+      renderRoot = event.root;
+      renderAttempt = event.attemptId;
     } else if (event.type === 'renderEnd') {
+      if (event.root !== renderRoot || event.attemptId !== renderAttempt) return;
+      if (event.ok === false) { renderStartAt = renderEndAt = null; return; }
       renderEndAt = event.t;
     } else if (event.type === 'commit') {
+      if (event.root !== renderRoot || event.attemptId !== renderAttempt) return;
       const target = openSession();
       if (renderStartAt !== null && renderEndAt !== null && target) {
         target.updates.push({
           render: renderEndAt - renderStartAt,
           commit: event.t - renderEndAt,
           total: event.t - renderStartAt,
+          // Both implemented engines run without yielding. This is elapsed JS work,
+          // not OS CPU accounting. Fiber supplies the measured active interval.
+          activeMs: event.activeMs ?? event.t - renderStartAt,
           patchCount: event.patchCount ?? 0,
           mounted: Boolean(event.mounted),
         });
@@ -238,6 +248,8 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
 
     /** 기록 시작. 이전 기록과 대기 중인 입력은 버린다. */
     start() {
+      renderStartAt = renderEndAt = null;
+      renderRoot = renderAttempt = null;
       pendingInputs = [];
       pendingClicks = [];
       session = {
@@ -343,6 +355,7 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
     clickEventP95: clickEvent.p95,
     updateCount: totals.count,
     updateMean: totals.mean,
+    activeMean: summarize(updates.map((u) => u.activeMs ?? u.total)).mean,
     updateP95: totals.p95,
     updateMax: totals.max,
     renderMean: summarize(updates.map((u) => u.render)).mean,

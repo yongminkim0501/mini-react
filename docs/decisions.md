@@ -293,3 +293,28 @@
 
 - **상태:** 측정 설계 제안.
 - **제안:** root/attempt별 계측과 취소 상태, 시나리오 완료 시 대기 작업, S4 수신·커밋 횟수를 기록한다. 예정 시각 기준 지연은 유지한다. 측정 창 정의를 바꾸면 stack도 재측정한다. 과거 값 대신 동일 환경에서 교차 실행하며 주사율 변동을 함께 보고한다.
+
+### B11 · 2026-11-10 · B-0 승인과 B-1 범위
+
+- **승인 근거:** B-0 완료 보고의 세 항목에 사용자가 `ㄱㄱ`로 승인했다. B03의 앱 한 줄 예외, B05의 useMemo 호환 범위, B06의 합계 중심 비교 기준을 적용한다.
+- **결정:** B-1까지만 구현한다. stack 엔진·data는 변경하지 않고, 앱은 승인한 onRegenerate 한 줄만 바꾼다. fiber-slice와 fiber는 계속 미구현 모드로 남긴다.
+
+### B12 · 2026-11-10 · 투명 자식 확장과 host Fiber 인덱스 비교
+
+- **결정:** 루트·host·text Fiber를 double buffer로 유지하고 순수 자식 함수는 반복 루프의 확장 프레임으로 처리한다. 펼친 host 결과끼리 인덱스로 비교한다. key는 stack과 같은 data-key 전파에만 쓰며 identity 매칭에 쓰지 않는다.
+- **이유:** 순수 함수 타입을 identity 경계로 삼으면 stack이 유지하는 DOM을 교체할 수 있다. 인접 텍스트 병합·복수 반환·단일 요소 key 상속을 동일하게 처리한다. host를 사이에 둔 함수 중첩도 1000단계로 제한한다.
+
+### B13 · 2026-11-10 · Render·큐·Commit 소유권
+
+- **결정:** 새 DOM은 detached 상태에서 속성·자식을 구성할 수 있다. 재사용하는 DOM·핸들러는 Render에서 바꾸지 않는다. Commit은 삭제→새 subtree 삽입→속성/텍스트 갱신→current 교체 순서다. updater는 setter에서 실행하지 않고 Render에서 재생하며, 커밋 성공 때만 큐에서 소비한다. 실패 시 기존 current와 action을 보존한다.
+- **제약:** Commit 중 DOM API 오류는 rollback할 수 없으므로 성공으로 보고하지 않고 예외를 전파한다. 자동 재마운트로 실패를 숨기지 않는다. 전체 subtree bailout은 추가하지 않는다.
+
+### B14 · 2026-11-10 · passive effect의 예약과 수명
+
+- **결정:** 정상 실행은 rAF 뒤 task에서 effect를 실행한다. 이는 paint 기회를 주는 예약이며 실제 물리적 paint 완료 보장은 아니다. 테스트는 명시적 passive drain으로 시점 차이를 구분한다. effect/cleanup 오류는 격리하며 unmount는 미실행 effect·예약 작업·이전 setter를 무효화한다.
+- **결정:** 의존성 없는 effect가 상태를 계속 갱신하는 경우 기존 안전 기준처럼 100회 연속 갱신에서 중단한다. Fiber는 passive task에 걸쳐 세며 외부 업데이트에서 연속 횟수를 초기화한다. 거절한 action은 큐에 넣지 않는다.
+
+### B15 · 2026-11-10 · B-1 계측과 재현 자료
+
+- **결정:** 기존 시나리오 시간 창과 예정 시각 기준 지연·주사율 판정식은 유지한다. root/attempt 식별과 activeMean만 추가한다. B-1은 양보가 없어 activeMean은 작업 구간의 경과 시간 합계이며 OS CPU 시간이 아니다. stack Commit은 diff 포함, Fiber Commit은 DOM 반영이므로 합계로 비교한다.
+- **결정:** 같은 headed Chrome에서 20k S1~S4를 엔진별 워밍업 1회 뒤 각 3회 교차 측정한다. trace는 별도 실행에서 S2 첫 글자 입력으로 수집한다. CDP로 Chrome Performance trace를 저장하고 명시한 이벤트 범주의 중복 없는 구간 합계를 계산한다. 이 계산값을 DevTools UI Summary를 읽은 값이라고 부르지 않는다.
