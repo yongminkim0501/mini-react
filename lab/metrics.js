@@ -9,9 +9,32 @@
  */
 import { max, percentile, summarize } from './stats.js';
 
-export const JANK_FRAME_MS = 33;
 export const LONG_TASK_MS = 50;
+/** 끊긴 프레임 = 프레임 예산의 이 배수 초과 */
+export const JANK_FACTOR = 2;
+/** 주사율 추정 전 기본값 */
+export const DEFAULT_HZ = 60;
 const LIVE_FRAMES = 180;
+
+/**
+ * rAF 간격 중앙값으로 주사율을 추정한다. 순수 함수.
+ * @param {readonly number[]} intervals ms
+ * @returns {number} Hz (정수). 표본이 없으면 NaN.
+ */
+export function estimateRefreshHz(intervals) {
+  const median = percentile(intervals, 50);
+  return Number.isFinite(median) && median > 0 ? Math.round(1000 / median) : NaN;
+}
+
+/** 주사율 → 프레임 예산(ms) */
+export function frameBudgetMs(hz) {
+  return 1000 / (Number.isFinite(hz) && hz > 0 ? hz : DEFAULT_HZ);
+}
+
+/** 60Hz에서 ±3Hz를 넘게 벗어나면 경고한다. */
+export function isNon60Hz(hz) {
+  return !Number.isFinite(hz) || Math.abs(hz - 60) > 3;
+}
 
 /**
  * @param {{
@@ -24,12 +47,15 @@ const LIVE_FRAMES = 180;
 export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap', progressLabel = 'progress' }) {
   /** 지금 기록 중인 구간. null이면 기록하지 않는다(라이브 HUD 값만 갱신). */
   let session = null;
+  let refreshHz = NaN;
   /** HUD용 최근 프레임 간격 */
   const liveFrames = [];
   /** HUD용 최근 진행 바 커밋 시각 */
   const liveProgress = [];
   let liveLongest = 0;
   const liveInput = [];
+  /** 주사율 추정 대기 */
+  let frameWaiters = [];
 
   let pendingInputs = [];
   let pendingClicks = [];
@@ -46,6 +72,14 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       if (session && !session.closed) {
         session.frames.push(gap);
         session.frameEnds.push(t);
+      }
+      if (frameWaiters.length) {
+        for (const w of frameWaiters) w.intervals.push(gap);
+        frameWaiters = frameWaiters.filter((w) => {
+          if (w.intervals.length < w.count) return true;
+          w.resolve(w.intervals);
+          return false;
+        });
       }
     }
     lastFrame = t;
@@ -72,6 +106,13 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
 
   // ── 반영 확인 후 첫 rAF까지 기다렸다 기록 ──
   const afterNextFrame = (fn) => requestAnimationFrame(() => fn(performance.now()));
+  const openSession = () => (session && !session.closed ? session : null);
+
+  /**
+   * 지연 한 건. main은 예정 시각 기준(없으면 실제 발사 시각 기준), event는 실제 발사 시각 기준.
+   * 스크립트 이벤트는 dispatch 순간에 timeStamp가 찍혀 메인 스레드가 막혀 기다린 시간이 빠지기 때문이다.
+   */
+  const latency = (p, now) => ({ main: now - (p.intendedAt ?? p.timeStamp), event: now - p.timeStamp });
 
   function resolveInputs() {
     if (pendingInputs.length === 0) return;
@@ -81,16 +122,13 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     // 이 값보다 먼저 들어온 입력은 더 새로운 값에 덮여 반영된 것으로 본다.
     const done = pendingInputs.slice(0, hit + 1);
     pendingInputs = pendingInputs.slice(hit + 1);
-    const target = session && !session.closed ? session : null;
+    const target = openSession();
     afterNextFrame((now) => {
       for (const p of done) {
-        const latency = now - p.timeStamp;
-        liveInput.push(latency);
+        const l = latency(p, now);
+        liveInput.push(l.main);
         if (liveInput.length > 50) liveInput.shift();
-        if (target) {
-          target.input.push(latency);
-          if (p.intendedAt !== null) target.inputFromIntended.push(now - p.intendedAt);
-        }
+        target?.input.push(l);
       }
     });
   }
@@ -101,12 +139,9 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     const done = pendingClicks.filter((p) => seq > p.seqBefore);
     if (done.length === 0) return;
     pendingClicks = pendingClicks.filter((p) => seq <= p.seqBefore);
-    const target = session && !session.closed ? session : null;
+    const target = openSession();
     afterNextFrame((now) => {
-      for (const p of done) {
-        target?.click.push(now - p.timeStamp);
-        if (target && p.intendedAt !== null) target.clickFromIntended.push(now - p.intendedAt);
-      }
+      for (const p of done) target?.click.push(latency(p, now));
     });
   }
 
@@ -119,7 +154,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       if (event.type === 'commit') {
         liveProgress.push(event.t);
         while (liveProgress.length && event.t - liveProgress[0] > 1000) liveProgress.shift();
-        if (session && !session.closed) session.progressCommits.push(event.t);
+        openSession()?.progressCommits.push(event.t);
       }
       return;
     }
@@ -130,8 +165,9 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
     } else if (event.type === 'renderEnd') {
       renderEndAt = event.t;
     } else if (event.type === 'commit') {
-      if (renderStartAt !== null && renderEndAt !== null && session && !session.closed) {
-        session.updates.push({
+      const target = openSession();
+      if (renderStartAt !== null && renderEndAt !== null && target) {
+        target.updates.push({
           render: renderEndAt - renderStartAt,
           commit: event.t - renderEndAt,
           total: event.t - renderStartAt,
@@ -149,6 +185,28 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
   return {
     longTaskSupported,
     onEngineEvent,
+
+    /**
+     * 다음 count개 rAF 간격의 중앙값으로 주사율을 추정해 저장한다.
+     * @param {number} [count]
+     */
+    calibrateRefresh(count = 90) {
+      return new Promise((resolve) => {
+        frameWaiters.push({
+          count,
+          intervals: [],
+          resolve: (intervals) => {
+            refreshHz = estimateRefreshHz(intervals);
+            resolve(refreshHz);
+          },
+        });
+      });
+    },
+
+    /** 추정한 주사율. 추정 전이면 NaN. */
+    get refreshHz() {
+      return refreshHz;
+    },
 
     /**
      * 검색 입력 발생. 캡처 단계에서 앱 핸들러보다 먼저 부른다.
@@ -176,9 +234,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
         frameEnds: [],
         longTasks: [],
         input: [],
-        inputFromIntended: [],
         click: [],
-        clickFromIntended: [],
         updates: [],
         progressCommits: [],
       };
@@ -188,26 +244,28 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
 
     /**
      * 기록을 끝내고 요약을 돌려준다. Long Task 항목은 늦게 전달되므로 잠시 기다린다.
-     * @returns {Promise<ReturnType<typeof summarizeSession>>}
+     * 기다리는 동안 다른 기록은 닫는다.
      */
     async stop() {
       const current = session;
       if (!current) throw new Error('기록 중이 아닙니다');
       const endedAt = performance.now();
-      // 이후로는 Long Task만 받는다. 항목이 늦게 전달되므로 잠시 기다린 뒤 구간 안의 것만 센다.
       current.closed = true;
       await new Promise((r) => setTimeout(r, 200));
       session = null;
-      return summarizeSession(current, endedAt, longTaskSupported);
+      return summarizeSession(current, endedAt, longTaskSupported, frameBudgetMs(refreshHz));
     },
 
     /** HUD용 실시간 값 */
     live() {
+      const now = performance.now();
       return {
         frames: liveFrames,
+        refreshHz,
+        budgetMs: frameBudgetMs(refreshHz),
         longest: longTaskSupported ? liveLongest : NaN,
         inputP95: percentile(liveInput, 95),
-        progressFps: liveProgress.filter((t) => performance.now() - t <= 1000).length,
+        progressFps: liveProgress.filter((t) => now - t <= 1000).length,
         recording: session !== null,
       };
     },
@@ -216,43 +274,47 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
 
 /**
  * 기록 구간을 숫자 요약으로 바꾼다. 순수 함수.
+ * 지연은 예정 시각 기준이 메인(input*, click*), 실제 발사 시각 기준이 보조(*Event*)다.
  * @param {any} s
  * @param {number} endedAt
  * @param {boolean} longTaskSupported
+ * @param {number} budgetMs 프레임 예산
  */
-export function summarizeSession(s, endedAt, longTaskSupported) {
+export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
   const duration = endedAt - s.startedAt;
+  const jankMs = budgetMs * JANK_FACTOR;
   const tasks = s.longTasks.filter((t) => t.start >= s.startedAt && t.start <= endedAt);
   const updates = s.updates.filter((u) => !u.mounted);
   const progressGaps = [];
   for (let i = 1; i < s.progressCommits.length; i++) progressGaps.push(s.progressCommits[i] - s.progressCommits[i - 1]);
   const frames = summarize(s.frames);
-  const inputs = summarize(s.input);
-  const inputsIntended = summarize(s.inputFromIntended);
-  const clicks = summarize(s.click);
-  const clicksIntended = summarize(s.clickFromIntended);
+  const input = summarize(s.input.map((l) => l.main));
+  const inputEvent = summarize(s.input.map((l) => l.event));
+  const click = summarize(s.click.map((l) => l.main));
+  const clickEvent = summarize(s.click.map((l) => l.event));
   const totals = summarize(updates.map((u) => u.total));
 
   return {
     durationMs: duration,
+    frameBudgetMs: budgetMs,
     frameP50: frames.p50,
     frameP95: frames.p95,
     frameMax: frames.max,
-    framesOver33: s.frames.filter((f) => f > JANK_FRAME_MS).length,
+    framesJank: s.frames.filter((f) => f > jankMs).length,
     /** 가장 긴 프레임이 끝난 시각 (구간 시작 기준, 진단용) */
     frameMaxAt: s.frames.length ? s.frameEnds[s.frames.indexOf(frames.max)] - s.startedAt : NaN,
     longTaskCount: longTaskSupported ? tasks.length : NaN,
     longTaskMax: longTaskSupported ? (tasks.length ? max(tasks.map((t) => t.duration)) : 0) : NaN,
-    inputCount: inputs.count,
-    inputP50: inputs.p50,
-    inputP95: inputs.p95,
-    inputMax: inputs.max,
-    inputFromIntendedP95: inputsIntended.p95,
-    clickCount: clicks.count,
-    clickP50: clicks.p50,
-    clickP95: clicks.p95,
-    clickMax: clicks.max,
-    clickFromIntendedP95: clicksIntended.p95,
+    inputCount: input.count,
+    inputP50: input.p50,
+    inputP95: input.p95,
+    inputMax: input.max,
+    inputEventP95: inputEvent.p95,
+    clickCount: click.count,
+    clickP50: click.p50,
+    clickP95: click.p95,
+    clickMax: click.max,
+    clickEventP95: clickEvent.p95,
     updateCount: totals.count,
     updateMean: totals.mean,
     updateP95: totals.p95,
@@ -261,7 +323,7 @@ export function summarizeSession(s, endedAt, longTaskSupported) {
     commitMean: summarize(updates.map((u) => u.commit)).mean,
     patchMean: summarize(updates.map((u) => u.patchCount)).mean,
     progressFps: duration > 0 ? (s.progressCommits.length / duration) * 1000 : NaN,
-    progressDropped: progressGaps.filter((g) => g > JANK_FRAME_MS).length,
+    progressDropped: progressGaps.filter((g) => g > jankMs).length,
     progressGapMax: max(progressGaps),
   };
 }
