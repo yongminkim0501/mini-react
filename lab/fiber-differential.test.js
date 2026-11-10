@@ -26,6 +26,8 @@ it('same heatmap inputs, regeneration, selection, SLO and resize produce identic
       container.querySelector('#regen').click(); await record();
       for (const text of ['dep', 'deploy-1742', 'err-503', '']) { event('#search', text); await record(); }
       container.querySelector('#heatmap .cell').click(); await record();
+      container.querySelector('#heatmap .cell').click(); await record();
+      expect(container.querySelector('#detail').dataset.seq).toBe('2');
       event('#slo', '500'); await record();
       event('#size', '2000', 'change'); await record();
       for (let i = 0; i < 3; i++) { container.querySelector('#regen').click(); await record(); }
