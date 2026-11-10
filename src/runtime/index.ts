@@ -6,5 +6,7 @@ export type { SetState, SetStateAction } from './hooks/useState';
 export { useEffect } from './hooks/useEffect';
 export { useMemo } from './hooks/useMemo';
 export { resolve } from './resolve';
+export { setInstrumentation } from './instrument';
+export type { Instrumentation } from './instrument';
 export type { HookSlot } from './hookRuntime';
 export type { Child, Component, ComponentProps, HNode } from './types';

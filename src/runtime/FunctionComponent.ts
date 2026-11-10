@@ -5,6 +5,7 @@ import { applyPatches } from '../core/patch';
 import { mount as mountDom } from '../core/vnode-to-dom';
 import { beginRender, endRender } from './hookRuntime';
 import type { HookHost, HookSlot, PendingEffect } from './hookRuntime';
+import { emitCommit, emitRenderEnd, emitRenderStart } from './instrument';
 import { resolve } from './resolve';
 import type { Component, ComponentProps } from './types';
 
@@ -45,15 +46,19 @@ export class FunctionComponent<P extends object = Record<string, never>> impleme
   mount(): void {
     if (this.isMounted) return;
     let vnode: VElement;
+    emitRenderStart(this);
     try {
       vnode = this.render();
     } catch (error) {
+      emitRenderEnd(this, false);
       this.hooks = [];
       this.hookCount = null;
       console.error('[FunctionComponent] 첫 렌더링 오류', error);
       return;
     }
+    emitRenderEnd(this, true);
     mountDom(this.container, vnode);
+    emitCommit(this, 0, true);
     this.commit([], vnode);
   }
 
@@ -61,12 +66,15 @@ export class FunctionComponent<P extends object = Record<string, never>> impleme
   update(): void {
     if (!this.isMounted || this.isRendering || !this.vnode) return;
     let next: VElement;
+    emitRenderStart(this);
     try {
       next = this.render();
     } catch (error) {
+      emitRenderEnd(this, false);
       console.error('[FunctionComponent] 렌더링 오류. 이전 화면을 유지합니다.', error);
       return;
     }
+    emitRenderEnd(this, true);
 
     const patches = diff(this.vnode, next);
     let ok = false;
@@ -77,6 +85,7 @@ export class FunctionComponent<P extends object = Record<string, never>> impleme
     }
     // 대상을 못 찾았거나 반영 중 예외가 나면 새 VNode로 다시 그려 DOM과 vnode를 맞춘다.
     if (!ok) mountDom(this.container, next);
+    emitCommit(this, patches.length, !ok);
     this.commit(patches, next);
   }
 
