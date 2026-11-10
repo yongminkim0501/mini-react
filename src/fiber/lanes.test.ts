@@ -100,12 +100,15 @@ describe('fiber priorities and abandoned work', () => {
     try {
       root.mount();pump();root.instance.flushPassiveEffects();commits.length=0;events.length=0;
       const button=container.querySelector('button')!, current=root.instance.current;
+      const snapshot=()=>JSON.stringify(current!.hooks.map((hook)=>hook.kind==='effect'?hook.deps:hook.value));
+      const before=snapshot();
       engine.startTransition(()=>setMatch('deferred'));
       tasks.shift()!();
       expect(container.querySelector('button')).toBe(button);expect(button.textContent).toBe('/');
       button.click();expect(seen).toEqual(['/']);
       expect(root.instance.current).toBe(current);expect(current!.hooks[1]!.kind==='state' && current!.hooks[1]!.value).toBe('');
       expect(effects).toEqual(['/']);
+      expect(snapshot()).toBe(before);
       runWithLane(SyncLane,()=>setQuery('urgent'));pumpSync();
       expect(commits).toEqual(['urgent/']);
       expect(events.some((e)=>e.type==='renderAbort' && e.lane===TransitionLane)).toBe(true);

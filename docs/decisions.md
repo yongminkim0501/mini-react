@@ -396,3 +396,14 @@
 
 - **증거:** 첫 B-3 측정에서 S4의 진행 바는 약 55.6fps였지만 Transition 커밋은 평균 6.3회뿐이었다. 한 실행의 커밋당 경과 평균은 5.66초로 늘었다. 짧은 Default 루트에 host task를 하나씩 전부 내주는 구조가 낮은 레인의 진행 기회를 크게 줄였다. 이를 최종 성능 개선으로 보고하지 않는다.
 - **결정:** fiber 모드의 host task 전체에 5ms deadline 하나를 두고, 높은 레인의 짧은 작업이 끝나면 남은 예산으로 다음 최고 레인을 처리한다. Sync microtask는 여전히 양보하지 않는다. fiber-slice의 FIFO/루트별 task 정책은 유지한다. 이 보완은 우선순위 선택의 진행성 문제를 해결하는 것으로 bailout·Commit 최적화·단위 작업 오버헤드 최적화는 하지 않는다. 가짜 시계로 Default 이후 같은 task에서 Transition이 진행하는 것을 검증하고 다시 측정한다.
+
+### B31 · 2026-11-10 · B-3 최종 측정과 비용 공개
+
+- **자료:** 코드 `09eba68`의 깨끗한 작업 트리에서 세 엔진을 20k S1~S4, 워밍업 제외 3회 교차 측정했다. [B-3 보고서](codex/B3-fiber.md)에 원자료·지연 분해·긴 프레임·trace를 보존했다.
+- **관측:** fiber-slice→fiber에서 S2 p95 416.2→93.2ms, S3 p95 402.0→88.9ms, S4 진행 바 22.5→42.4fps였다. Sync 전체 트리 Render 작업이 약 60ms여서 1~2프레임에는 이르지 못했다.
+- **비용:** S2/S3 최종 히트맵은 391.0/445.8ms로 늦어졌고 폐기 비용도 발생했다. S4는 커밋 수가 19.7→12.0으로 줄어 fps 개선을 같은 화면 갱신 처리량의 증가라고 주장하지 않는다. 우선순위의 trade-off와 낮은 레인 경과 시간 증가를 함께 보고한다. B-3에서 멈추고 B-4는 설계만 작성한다.
+
+### B32 · 2026-11-10 · 진행 바의 문서 작업과 셀 변경 구분
+
+- **관측:** progress-only 실험에서 heatmap DOM 변경과 heatmap/row/cell 명명 invalidation은 0이었다. progress-thumb의 style invalidation과 문서 root Layout·document Paint는 반복됐으며 Layout의 최대 dirtyObjects는 6, 트리 크기는 20,696이었다. document Paint clip에는 heatmap 영역이 포함됐다.
+- **판단:** 문서 범위 paint 기록 비용은 있지만 이것이 모든 셀의 재배치·GPU 재래스터화 증명은 아니다. 수신 한 건의 셀 invalidation·dirtyObjects 증가는 별도로 확인됐다. B-2의 123ms 전부를 진행 바 때문이라고 귀속하지 않는다. 앱·CSS 수정은 하지 않았다.

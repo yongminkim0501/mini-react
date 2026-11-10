@@ -1,0 +1,347 @@
+[
+  {
+    "mode": "fiber-slice",
+    "action": "progress-only",
+    "filename": "diagnostic-fiber-slice-progress-only.trace.json.gz",
+    "nodeMap": [
+      {
+        "selector": "#document",
+        "backendNodeId": 38688
+      },
+      {
+        "selector": "html",
+        "backendNodeId": 38697,
+        "box": [
+          0,
+          0,
+          1280,
+          0,
+          1280,
+          821.5703125,
+          0,
+          821.5703125
+        ]
+      },
+      {
+        "selector": "body",
+        "backendNodeId": 39159,
+        "box": [
+          0,
+          0,
+          1280,
+          0,
+          1280,
+          809.5703125,
+          0,
+          809.5703125
+        ]
+      },
+      {
+        "selector": "#app-root",
+        "backendNodeId": 39162,
+        "box": [
+          0,
+          114.78125,
+          1280,
+          114.78125,
+          1280,
+          691.578125,
+          0,
+          691.578125
+        ]
+      },
+      {
+        "selector": "#heatmap",
+        "backendNodeId": 38745,
+        "box": [
+          16,
+          175.578125,
+          992,
+          175.578125,
+          992,
+          679.578125,
+          16,
+          679.578125
+        ]
+      },
+      {
+        "selector": "#progress-root",
+        "backendNodeId": 39168,
+        "box": [
+          103.4140625,
+          101.3828125,
+          1264,
+          101.3828125,
+          1264,
+          111.3828125,
+          103.4140625,
+          111.3828125
+        ]
+      },
+      {
+        "selector": ".progress",
+        "backendNodeId": 39169,
+        "box": [
+          103.4140625,
+          101.3828125,
+          1264,
+          101.3828125,
+          1264,
+          111.3828125,
+          103.4140625,
+          111.3828125
+        ]
+      },
+      {
+        "selector": ".progress-thumb",
+        "backendNodeId": 38698,
+        "box": [
+          1113.296875,
+          101.3828125,
+          1173.296875,
+          101.3828125,
+          1173.296875,
+          111.3828125,
+          1113.296875,
+          111.3828125
+        ]
+      }
+    ],
+    "mutations": {
+      "heatmap": 0,
+      "progress": 68
+    },
+    "markerStart": "diag-start",
+    "markerEnd": "diag-end"
+  },
+  {
+    "mode": "fiber",
+    "action": "progress-only",
+    "filename": "diagnostic-fiber-progress-only.trace.json.gz",
+    "nodeMap": [
+      {
+        "selector": "#document",
+        "backendNodeId": 39171
+      },
+      {
+        "selector": "html",
+        "backendNodeId": 39180,
+        "box": [
+          0,
+          0,
+          1280,
+          0,
+          1280,
+          821.5703125,
+          0,
+          821.5703125
+        ]
+      },
+      {
+        "selector": "body",
+        "backendNodeId": 39642,
+        "box": [
+          0,
+          0,
+          1280,
+          0,
+          1280,
+          809.5703125,
+          0,
+          809.5703125
+        ]
+      },
+      {
+        "selector": "#app-root",
+        "backendNodeId": 39645,
+        "box": [
+          0,
+          114.78125,
+          1280,
+          114.78125,
+          1280,
+          691.578125,
+          0,
+          691.578125
+        ]
+      },
+      {
+        "selector": "#heatmap",
+        "backendNodeId": 39226,
+        "box": [
+          16,
+          175.578125,
+          992,
+          175.578125,
+          992,
+          679.578125,
+          16,
+          679.578125
+        ]
+      },
+      {
+        "selector": "#progress-root",
+        "backendNodeId": 39651,
+        "box": [
+          103.4140625,
+          101.3828125,
+          1264,
+          101.3828125,
+          1264,
+          111.3828125,
+          103.4140625,
+          111.3828125
+        ]
+      },
+      {
+        "selector": ".progress",
+        "backendNodeId": 39652,
+        "box": [
+          103.4140625,
+          101.3828125,
+          1264,
+          101.3828125,
+          1264,
+          111.3828125,
+          103.4140625,
+          111.3828125
+        ]
+      },
+      {
+        "selector": ".progress-thumb",
+        "backendNodeId": 39181,
+        "box": [
+          1100.875,
+          101.3828125,
+          1160.875,
+          101.3828125,
+          1160.875,
+          111.3828125,
+          1100.875,
+          111.3828125
+        ]
+      }
+    ],
+    "mutations": {
+      "heatmap": 0,
+      "progress": 66
+    },
+    "markerStart": "diag-start",
+    "markerEnd": "diag-end"
+  },
+  {
+    "mode": "fiber-slice",
+    "action": "one-receive",
+    "filename": "diagnostic-fiber-slice-one-receive.trace.json.gz",
+    "nodeMap": [
+      {
+        "selector": "#document",
+        "backendNodeId": 39654
+      },
+      {
+        "selector": "html",
+        "backendNodeId": 39663,
+        "box": [
+          0,
+          0,
+          1280,
+          0,
+          1280,
+          821.5703125,
+          0,
+          821.5703125
+        ]
+      },
+      {
+        "selector": "body",
+        "backendNodeId": 40125,
+        "box": [
+          0,
+          0,
+          1280,
+          0,
+          1280,
+          809.5703125,
+          0,
+          809.5703125
+        ]
+      },
+      {
+        "selector": "#app-root",
+        "backendNodeId": 40128,
+        "box": [
+          0,
+          114.78125,
+          1280,
+          114.78125,
+          1280,
+          691.578125,
+          0,
+          691.578125
+        ]
+      },
+      {
+        "selector": "#heatmap",
+        "backendNodeId": 39711,
+        "box": [
+          16,
+          175.578125,
+          992,
+          175.578125,
+          992,
+          679.578125,
+          16,
+          679.578125
+        ]
+      },
+      {
+        "selector": "#progress-root",
+        "backendNodeId": 40134,
+        "box": [
+          103.4140625,
+          101.3828125,
+          1264,
+          101.3828125,
+          1264,
+          111.3828125,
+          103.4140625,
+          111.3828125
+        ]
+      },
+      {
+        "selector": ".progress",
+        "backendNodeId": 40135,
+        "box": [
+          103.4140625,
+          101.3828125,
+          1264,
+          101.3828125,
+          1264,
+          111.3828125,
+          103.4140625,
+          111.3828125
+        ]
+      },
+      {
+        "selector": ".progress-thumb",
+        "backendNodeId": 39664,
+        "box": [
+          1121.0703125,
+          101.3828125,
+          1181.0703125,
+          101.3828125,
+          1181.0703125,
+          111.3828125,
+          1121.0703125,
+          111.3828125
+        ]
+      }
+    ],
+    "mutations": {
+      "heatmap": 24176,
+      "progress": 14
+    },
+    "markerStart": "diag-start",
+    "markerEnd": "diag-end"
+  }
+]
