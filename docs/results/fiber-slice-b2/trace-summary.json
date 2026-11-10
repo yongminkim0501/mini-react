@@ -1,0 +1,2159 @@
+{
+  "definition": "Marker-bounded main-thread exclusive union. Painting > Rendering > Scripting; remaining time OtherOrIdle. Not DevTools UI Summary.",
+  "categories": {
+    "Scripting": [
+      "FunctionCall",
+      "EvaluateScript",
+      "EvaluateModule",
+      "EventDispatch",
+      "RunMicrotasks",
+      "V8.Execute",
+      "TimerFire",
+      "FireAnimationFrame"
+    ],
+    "Rendering": [
+      "UpdateLayoutTree",
+      "RecalculateStyles",
+      "Layout",
+      "PrePaint",
+      "Layerize",
+      "UpdateLayerTree"
+    ],
+    "Painting": [
+      "Paint",
+      "PaintImage",
+      "CompositeLayers",
+      "Commit"
+    ]
+  },
+  "rows": [
+    {
+      "mode": "stack",
+      "scenario": "S2",
+      "durationMs": 285.562,
+      "categories": {
+        "Scripting": {
+          "ms": 125.248,
+          "percent": 43.86017747459396
+        },
+        "Rendering": {
+          "ms": 79.736,
+          "percent": 27.922482683270182
+        },
+        "Painting": {
+          "ms": 65.799,
+          "percent": 23.041931349409236
+        },
+        "OtherOrIdle": {
+          "ms": 14.779,
+          "percent": 5.175408492726623
+        }
+      },
+      "taskDiagnostics": {
+        "scriptingOver50Count": 1,
+        "maxScriptingPerTaskMs": 123.276,
+        "maxRenderingPaintingPerTaskMs": 54.163,
+        "tasks": [
+          {
+            "from": 568451263621,
+            "durationMs": 0.155,
+            "Scripting": 0.147,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568451263777,
+            "durationMs": 17.199,
+            "Scripting": 0.40900000000000003,
+            "Rendering": 6.345000000000001,
+            "Painting": 7.596,
+            "OtherOrIdle": 2.849
+          },
+          {
+            "from": 568451280983,
+            "durationMs": 172.569,
+            "Scripting": 123.276,
+            "Rendering": 44.394000000000005,
+            "Painting": 0,
+            "OtherOrIdle": 4.899
+          },
+          {
+            "from": 568451453558,
+            "durationMs": 0.037,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.037
+          },
+          {
+            "from": 568451453599,
+            "durationMs": 0.169,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.169
+          },
+          {
+            "from": 568451453772,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568451453776,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451453778,
+            "durationMs": 55.82,
+            "Scripting": 0.343,
+            "Rendering": 22.845,
+            "Painting": 31.318,
+            "OtherOrIdle": 1.314
+          },
+          {
+            "from": 568451509603,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568451509611,
+            "durationMs": 0.068,
+            "Scripting": 0.009,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.059000000000000004
+          },
+          {
+            "from": 568451509680,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568451509683,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568451509686,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451509688,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451509690,
+            "durationMs": 0.013,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.013
+          },
+          {
+            "from": 568451509703,
+            "durationMs": 17.565,
+            "Scripting": 0.215,
+            "Rendering": 2.973,
+            "Painting": 13.882999999999997,
+            "OtherOrIdle": 0.494
+          },
+          {
+            "from": 568451527272,
+            "durationMs": 0.042,
+            "Scripting": 0.036,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568451527317,
+            "durationMs": 0.031,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.031
+          },
+          {
+            "from": 568451527349,
+            "durationMs": 0.18,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.18
+          },
+          {
+            "from": 568451527532,
+            "durationMs": 2.093,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 2.093
+          },
+          {
+            "from": 568451529627,
+            "durationMs": 0.02,
+            "Scripting": 0.005,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.015
+          },
+          {
+            "from": 568451529648,
+            "durationMs": 0.016,
+            "Scripting": 0.014000000000000002,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568451529665,
+            "durationMs": 0.026,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.026
+          },
+          {
+            "from": 568451529692,
+            "durationMs": 0.027,
+            "Scripting": 0.015,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568451529720,
+            "durationMs": 0.018,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.018
+          },
+          {
+            "from": 568451529739,
+            "durationMs": 0.091,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.091
+          },
+          {
+            "from": 568451529831,
+            "durationMs": 0.004,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568451529836,
+            "durationMs": 0.303,
+            "Scripting": 0.277,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.026000000000000002
+          },
+          {
+            "from": 568451530141,
+            "durationMs": 1.165,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 1.165
+          },
+          {
+            "from": 568451531309,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568451531313,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451531315,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451531316,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568451531318,
+            "durationMs": 16.895,
+            "Scripting": 0.167,
+            "Rendering": 3.179,
+            "Painting": 13.001999999999999,
+            "OtherOrIdle": 0.547
+          },
+          {
+            "from": 568451548218,
+            "durationMs": 0.027,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.027
+          },
+          {
+            "from": 568451548247,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568451548250,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451548254,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568451548257,
+            "durationMs": 0.034,
+            "Scripting": 0.03,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568451548292,
+            "durationMs": 0.018,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.018
+          },
+          {
+            "from": 568451548311,
+            "durationMs": 0.449,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.449
+          },
+          {
+            "from": 568451548763,
+            "durationMs": 0.025,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.025
+          }
+        ]
+      }
+    },
+    {
+      "mode": "stack",
+      "scenario": "S4",
+      "durationMs": 217.48,
+      "categories": {
+        "Scripting": {
+          "ms": 109.61,
+          "percent": 50.40003678499172
+        },
+        "Rendering": {
+          "ms": 59.136,
+          "percent": 27.19146588192018
+        },
+        "Painting": {
+          "ms": 32.926,
+          "percent": 15.139782968548833
+        },
+        "OtherOrIdle": {
+          "ms": 15.808,
+          "percent": 7.268714364539268
+        }
+      },
+      "taskDiagnostics": {
+        "scriptingOver50Count": 1,
+        "maxScriptingPerTaskMs": 108.711,
+        "maxRenderingPaintingPerTaskMs": 68.629,
+        "tasks": [
+          {
+            "from": 568455591676,
+            "durationMs": 0.094,
+            "Scripting": 0.09,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568455591771,
+            "durationMs": 14.336,
+            "Scripting": 0.101,
+            "Rendering": 5.41,
+            "Painting": 5.6000000000000005,
+            "OtherOrIdle": 3.2249999999999996
+          },
+          {
+            "from": 568455606112,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568455606121,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568455606123,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455606126,
+            "durationMs": 108.811,
+            "Scripting": 108.711,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.09999999999999999
+          },
+          {
+            "from": 568455714943,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568455714954,
+            "durationMs": 73.866,
+            "Scripting": 0.179,
+            "Rendering": 48.437,
+            "Painting": 20.192000000000004,
+            "OtherOrIdle": 5.057999999999999
+          },
+          {
+            "from": 568455788824,
+            "durationMs": 0.005,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568455788833,
+            "durationMs": 0.04,
+            "Scripting": 0.035,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568455788875,
+            "durationMs": 0.006,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568455788882,
+            "durationMs": 0.011,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568455788894,
+            "durationMs": 0.008,
+            "Scripting": 0.006,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568455788903,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455788905,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568455788909,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455788911,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568455788920,
+            "durationMs": 0.012,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568455788933,
+            "durationMs": 0.038,
+            "Scripting": 0.02,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.018000000000000002
+          },
+          {
+            "from": 568455788973,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455788975,
+            "durationMs": 0.025,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.025
+          },
+          {
+            "from": 568455789001,
+            "durationMs": 0.141,
+            "Scripting": 0.118,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.023
+          },
+          {
+            "from": 568455789143,
+            "durationMs": 16.006,
+            "Scripting": 0.12400000000000001,
+            "Rendering": 5.281000000000001,
+            "Painting": 7.1339999999999995,
+            "OtherOrIdle": 3.467
+          },
+          {
+            "from": 568455805154,
+            "durationMs": 0.019,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.019
+          },
+          {
+            "from": 568455805174,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568455805185,
+            "durationMs": 0.03,
+            "Scripting": 0.026000000000000002,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568455805216,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568455805219,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455805221,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568455805224,
+            "durationMs": 0.006,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568455805241,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568455805245,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455805247,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455805249,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568455805250,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          }
+        ]
+      }
+    },
+    {
+      "mode": "fiber-slice",
+      "scenario": "S2",
+      "durationMs": 277.846,
+      "categories": {
+        "Scripting": {
+          "ms": 111.414,
+          "percent": 40.099191638533576
+        },
+        "Rendering": {
+          "ms": 92.57,
+          "percent": 33.31701734054116
+        },
+        "Painting": {
+          "ms": 64.242,
+          "percent": 23.121441373998547
+        },
+        "OtherOrIdle": {
+          "ms": 9.62,
+          "percent": 3.462349646926715
+        }
+      },
+      "taskDiagnostics": {
+        "scriptingOver50Count": 0,
+        "maxScriptingPerTaskMs": 15.704999999999998,
+        "maxRenderingPaintingPerTaskMs": 91.952,
+        "tasks": [
+          {
+            "from": 568459918456,
+            "durationMs": 0.128,
+            "Scripting": 0.118,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.01
+          },
+          {
+            "from": 568459918585,
+            "durationMs": 0.015,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.015
+          },
+          {
+            "from": 568459919304,
+            "durationMs": 0.971,
+            "Scripting": 0.011,
+            "Rendering": 0.852,
+            "Painting": 0,
+            "OtherOrIdle": 0.108
+          },
+          {
+            "from": 568459920277,
+            "durationMs": 1.939,
+            "Scripting": 1.262,
+            "Rendering": 0.538,
+            "Painting": 0,
+            "OtherOrIdle": 0.139
+          },
+          {
+            "from": 568459922218,
+            "durationMs": 0.007,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568459922226,
+            "durationMs": 0.023,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.023
+          },
+          {
+            "from": 568459922250,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568459922259,
+            "durationMs": 0.233,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.233
+          },
+          {
+            "from": 568459922493,
+            "durationMs": 0.012,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568459922717,
+            "durationMs": 0.012,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568459922729,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568459922780,
+            "durationMs": 0.006,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568459922787,
+            "durationMs": 0.017,
+            "Scripting": 0.002,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.015
+          },
+          {
+            "from": 568459922864,
+            "durationMs": 16.416,
+            "Scripting": 0.044,
+            "Rendering": 6.281000000000001,
+            "Painting": 7.555,
+            "OtherOrIdle": 2.536
+          },
+          {
+            "from": 568459939285,
+            "durationMs": 0.02,
+            "Scripting": 0.007,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.013
+          },
+          {
+            "from": 568459939306,
+            "durationMs": 5.104,
+            "Scripting": 5.054,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.05
+          },
+          {
+            "from": 568459944414,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568459944419,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459944421,
+            "durationMs": 0.066,
+            "Scripting": 0.041,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.024999999999999998
+          },
+          {
+            "from": 568459944488,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568459944498,
+            "durationMs": 0.174,
+            "Scripting": 0.038,
+            "Rendering": 0.017,
+            "Painting": 0.039,
+            "OtherOrIdle": 0.08
+          },
+          {
+            "from": 568459944674,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459944676,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568459944679,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459944681,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459944683,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459944684,
+            "durationMs": 0.078,
+            "Scripting": 0.064,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.013999999999999999
+          },
+          {
+            "from": 568459944763,
+            "durationMs": 0.016,
+            "Scripting": 0.008,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568459944780,
+            "durationMs": 0.005,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568459944786,
+            "durationMs": 5.052,
+            "Scripting": 5.043,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009000000000000001
+          },
+          {
+            "from": 568459949840,
+            "durationMs": 4.936,
+            "Scripting": 4.93,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568459954781,
+            "durationMs": 5.037,
+            "Scripting": 4.98,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.056999999999999995
+          },
+          {
+            "from": 568459959822,
+            "durationMs": 0.006,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568459959831,
+            "durationMs": 16.326,
+            "Scripting": 0.05700000000000001,
+            "Rendering": 4.987,
+            "Painting": 10.661999999999999,
+            "OtherOrIdle": 0.62
+          },
+          {
+            "from": 568459976160,
+            "durationMs": 0.004,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568459976166,
+            "durationMs": 5.044,
+            "Scripting": 5.007,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.037000000000000005
+          },
+          {
+            "from": 568459981213,
+            "durationMs": 0.013,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.013
+          },
+          {
+            "from": 568459981227,
+            "durationMs": 0.102,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.102
+          },
+          {
+            "from": 568459981331,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459981333,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568459981335,
+            "durationMs": 0.132,
+            "Scripting": 0.033,
+            "Rendering": 0.008,
+            "Painting": 0.03,
+            "OtherOrIdle": 0.061
+          },
+          {
+            "from": 568459981468,
+            "durationMs": 0.087,
+            "Scripting": 0.075,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568459981556,
+            "durationMs": 0.308,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.308
+          },
+          {
+            "from": 568459981865,
+            "durationMs": 0.004,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568459981869,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568459981872,
+            "durationMs": 4.992,
+            "Scripting": 4.983,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009000000000000001
+          },
+          {
+            "from": 568459986865,
+            "durationMs": 4.979,
+            "Scripting": 4.971,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568459991845,
+            "durationMs": 11.671,
+            "Scripting": 0.023,
+            "Rendering": 5.292,
+            "Painting": 5.802999999999999,
+            "OtherOrIdle": 0.553
+          },
+          {
+            "from": 568460003520,
+            "durationMs": 5.156,
+            "Scripting": 5.105,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.051000000000000004
+          },
+          {
+            "from": 568460008680,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568460008689,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568460008691,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568460008693,
+            "durationMs": 0.125,
+            "Scripting": 0.031999999999999994,
+            "Rendering": 0.006,
+            "Painting": 0.027,
+            "OtherOrIdle": 0.06
+          },
+          {
+            "from": 568460008820,
+            "durationMs": 0.102,
+            "Scripting": 0.09,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568460008923,
+            "durationMs": 0.022,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.022
+          },
+          {
+            "from": 568460008946,
+            "durationMs": 0.005,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568460008951,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568460008955,
+            "durationMs": 5.011,
+            "Scripting": 5,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568460013966,
+            "durationMs": 4.95,
+            "Scripting": 4.943,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568460018916,
+            "durationMs": 5.006,
+            "Scripting": 4.997,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009000000000000001
+          },
+          {
+            "from": 568460023923,
+            "durationMs": 11.449,
+            "Scripting": 0.027999999999999997,
+            "Rendering": 5.022,
+            "Painting": 5.894000000000001,
+            "OtherOrIdle": 0.505
+          },
+          {
+            "from": 568460035376,
+            "durationMs": 5.006,
+            "Scripting": 4.98,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.026
+          },
+          {
+            "from": 568460040384,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568460040394,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568460040396,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568460040398,
+            "durationMs": 0.104,
+            "Scripting": 0.027000000000000003,
+            "Rendering": 0.004,
+            "Painting": 0.026,
+            "OtherOrIdle": 0.047
+          },
+          {
+            "from": 568460040503,
+            "durationMs": 0.068,
+            "Scripting": 0.058,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.01
+          },
+          {
+            "from": 568460040572,
+            "durationMs": 0.005,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568460040578,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568460040581,
+            "durationMs": 4.934,
+            "Scripting": 4.928,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.006
+          },
+          {
+            "from": 568460045516,
+            "durationMs": 8.411,
+            "Scripting": 8.352,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.059000000000000004
+          },
+          {
+            "from": 568460053931,
+            "durationMs": 5.005,
+            "Scripting": 4.97,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.035
+          },
+          {
+            "from": 568460058939,
+            "durationMs": 12.031,
+            "Scripting": 0.04,
+            "Rendering": 5.333,
+            "Painting": 6.014,
+            "OtherOrIdle": 0.644
+          },
+          {
+            "from": 568460070975,
+            "durationMs": 4.961,
+            "Scripting": 4.927,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.034
+          },
+          {
+            "from": 568460075938,
+            "durationMs": 0.014,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.014
+          },
+          {
+            "from": 568460075953,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568460075956,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568460075958,
+            "durationMs": 0.124,
+            "Scripting": 0.030000000000000006,
+            "Rendering": 0.005,
+            "Painting": 0.03,
+            "OtherOrIdle": 0.059000000000000004
+          },
+          {
+            "from": 568460076083,
+            "durationMs": 0.096,
+            "Scripting": 0.085,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568460076180,
+            "durationMs": 0.005,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568460076186,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568460076190,
+            "durationMs": 4.925,
+            "Scripting": 4.918,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568460081116,
+            "durationMs": 4.997,
+            "Scripting": 4.99,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568460086114,
+            "durationMs": 15.732,
+            "Scripting": 15.704999999999998,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.027
+          },
+          {
+            "from": 568460101848,
+            "durationMs": 93.606,
+            "Scripting": 0.184,
+            "Rendering": 63.78999999999999,
+            "Painting": 28.162,
+            "OtherOrIdle": 1.47
+          },
+          {
+            "from": 568460195467,
+            "durationMs": 0.267,
+            "Scripting": 0.202,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.065
+          }
+        ]
+      }
+    },
+    {
+      "mode": "fiber-slice",
+      "scenario": "S4",
+      "durationMs": 352.078,
+      "categories": {
+        "Scripting": {
+          "ms": 140.07,
+          "percent": 39.78379790841802
+        },
+        "Rendering": {
+          "ms": 119.593,
+          "percent": 33.96775714472361
+        },
+        "Painting": {
+          "ms": 81.498,
+          "percent": 23.14771158663705
+        },
+        "OtherOrIdle": {
+          "ms": 10.917,
+          "percent": 3.1007333602213145
+        }
+      },
+      "taskDiagnostics": {
+        "scriptingOver50Count": 0,
+        "maxScriptingPerTaskMs": 35.841,
+        "maxRenderingPaintingPerTaskMs": 122.96900000000001,
+        "tasks": [
+          {
+            "from": 568464111288,
+            "durationMs": 0.14,
+            "Scripting": 0.135,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568464111430,
+            "durationMs": 14.33,
+            "Scripting": 0.062,
+            "Rendering": 5.593,
+            "Painting": 7.718999999999999,
+            "OtherOrIdle": 0.956
+          },
+          {
+            "from": 568464125768,
+            "durationMs": 0.013,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.013
+          },
+          {
+            "from": 568464125782,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464125791,
+            "durationMs": 0.288,
+            "Scripting": 0.226,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.062
+          },
+          {
+            "from": 568464126081,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568464126085,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464126088,
+            "durationMs": 0.154,
+            "Scripting": 0.13,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.024
+          },
+          {
+            "from": 568464126243,
+            "durationMs": 12.066,
+            "Scripting": 0.038,
+            "Rendering": 5.2379999999999995,
+            "Painting": 5.9959999999999996,
+            "OtherOrIdle": 0.794
+          },
+          {
+            "from": 568464138316,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568464138327,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464138330,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464138333,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464138337,
+            "durationMs": 9.231,
+            "Scripting": 9.147,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.08399999999999999
+          },
+          {
+            "from": 568464147575,
+            "durationMs": 0.071,
+            "Scripting": 0.044,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.027000000000000003
+          },
+          {
+            "from": 568464147648,
+            "durationMs": 0.012,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568464147662,
+            "durationMs": 0.012,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568464147675,
+            "durationMs": 0.158,
+            "Scripting": 0.044000000000000004,
+            "Rendering": 0.007,
+            "Painting": 0.044,
+            "OtherOrIdle": 0.06300000000000001
+          },
+          {
+            "from": 568464147834,
+            "durationMs": 0.007,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568464147842,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464147845,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568464147847,
+            "durationMs": 0.1,
+            "Scripting": 0.082,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.018
+          },
+          {
+            "from": 568464147948,
+            "durationMs": 0.019,
+            "Scripting": 0.011,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464147968,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568464147971,
+            "durationMs": 4.966,
+            "Scripting": 4.945,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.021
+          },
+          {
+            "from": 568464152949,
+            "durationMs": 4.998,
+            "Scripting": 4.98,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.018000000000000002
+          },
+          {
+            "from": 568464157950,
+            "durationMs": 11.543,
+            "Scripting": 0.034,
+            "Rendering": 4.918,
+            "Painting": 5.75,
+            "OtherOrIdle": 0.841
+          },
+          {
+            "from": 568464169497,
+            "durationMs": 4.976,
+            "Scripting": 4.938,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.038000000000000006
+          },
+          {
+            "from": 568464174475,
+            "durationMs": 0.011,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568464174487,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464174496,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464174498,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464174500,
+            "durationMs": 0.107,
+            "Scripting": 0.034,
+            "Rendering": 0.006,
+            "Painting": 0.029,
+            "OtherOrIdle": 0.038000000000000006
+          },
+          {
+            "from": 568464174609,
+            "durationMs": 0.081,
+            "Scripting": 0.07,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568464174691,
+            "durationMs": 0.004,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568464174695,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464174698,
+            "durationMs": 4.94,
+            "Scripting": 4.919,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.020999999999999998
+          },
+          {
+            "from": 568464179639,
+            "durationMs": 4.996,
+            "Scripting": 4.984,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568464184637,
+            "durationMs": 5.016,
+            "Scripting": 5.004,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.012
+          },
+          {
+            "from": 568464189656,
+            "durationMs": 11.417,
+            "Scripting": 0.031,
+            "Rendering": 4.976,
+            "Painting": 5.662,
+            "OtherOrIdle": 0.748
+          },
+          {
+            "from": 568464201077,
+            "durationMs": 5.024,
+            "Scripting": 4.991,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.033
+          },
+          {
+            "from": 568464206104,
+            "durationMs": 0.025,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.025
+          },
+          {
+            "from": 568464206131,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464206140,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464206143,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568464206145,
+            "durationMs": 0.075,
+            "Scripting": 0.064,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568464206222,
+            "durationMs": 11.818,
+            "Scripting": 0.027000000000000003,
+            "Rendering": 5.218,
+            "Painting": 5.823,
+            "OtherOrIdle": 0.75
+          },
+          {
+            "from": 568464218044,
+            "durationMs": 5.082,
+            "Scripting": 5.039,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.043
+          },
+          {
+            "from": 568464223129,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568464223139,
+            "durationMs": 0.007,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568464223148,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568464223150,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568464223152,
+            "durationMs": 0.099,
+            "Scripting": 0.031,
+            "Rendering": 0.005,
+            "Painting": 0.025,
+            "OtherOrIdle": 0.038000000000000006
+          },
+          {
+            "from": 568464223252,
+            "durationMs": 0.06,
+            "Scripting": 0.05,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.01
+          },
+          {
+            "from": 568464223313,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464223316,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464223318,
+            "durationMs": 8.61,
+            "Scripting": 8.561,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.049
+          },
+          {
+            "from": 568464231933,
+            "durationMs": 5.062,
+            "Scripting": 5.033,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.028999999999999998
+          },
+          {
+            "from": 568464237003,
+            "durationMs": 4.99,
+            "Scripting": 4.974,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.016
+          },
+          {
+            "from": 568464241996,
+            "durationMs": 11.293,
+            "Scripting": 0.042,
+            "Rendering": 4.605,
+            "Painting": 5.836,
+            "OtherOrIdle": 0.81
+          },
+          {
+            "from": 568464253294,
+            "durationMs": 4.97,
+            "Scripting": 4.93,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.04
+          },
+          {
+            "from": 568464258268,
+            "durationMs": 0.011,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568464258281,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568464258284,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464258287,
+            "durationMs": 0.116,
+            "Scripting": 0.036000000000000004,
+            "Rendering": 0.004,
+            "Painting": 0.031,
+            "OtherOrIdle": 0.045
+          },
+          {
+            "from": 568464258404,
+            "durationMs": 0.087,
+            "Scripting": 0.076,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.011
+          },
+          {
+            "from": 568464258493,
+            "durationMs": 0.005,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.005
+          },
+          {
+            "from": 568464258499,
+            "durationMs": 0.003,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.003
+          },
+          {
+            "from": 568464258502,
+            "durationMs": 4.974,
+            "Scripting": 4.966,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464263477,
+            "durationMs": 5.019,
+            "Scripting": 5.01,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009000000000000001
+          },
+          {
+            "from": 568464268497,
+            "durationMs": 4.997,
+            "Scripting": 4.988,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009000000000000001
+          },
+          {
+            "from": 568464273496,
+            "durationMs": 11.432,
+            "Scripting": 0.028000000000000004,
+            "Rendering": 4.853999999999999,
+            "Painting": 5.754,
+            "OtherOrIdle": 0.7959999999999999
+          },
+          {
+            "from": 568464284933,
+            "durationMs": 5.037,
+            "Scripting": 5.008,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.028999999999999998
+          },
+          {
+            "from": 568464289973,
+            "durationMs": 0.009,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009
+          },
+          {
+            "from": 568464289983,
+            "durationMs": 0.008,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464289992,
+            "durationMs": 0.002,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.002
+          },
+          {
+            "from": 568464289995,
+            "durationMs": 0.001,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.001
+          },
+          {
+            "from": 568464289997,
+            "durationMs": 0.095,
+            "Scripting": 0.03,
+            "Rendering": 0.005,
+            "Painting": 0.024,
+            "OtherOrIdle": 0.036000000000000004
+          },
+          {
+            "from": 568464290093,
+            "durationMs": 0.072,
+            "Scripting": 0.063,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.009000000000000001
+          },
+          {
+            "from": 568464290165,
+            "durationMs": 0.004,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.004
+          },
+          {
+            "from": 568464290170,
+            "durationMs": 4.873,
+            "Scripting": 4.866,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.007
+          },
+          {
+            "from": 568464295044,
+            "durationMs": 4.966,
+            "Scripting": 4.958,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.008
+          },
+          {
+            "from": 568464300011,
+            "durationMs": 35.94,
+            "Scripting": 35.841,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.09899999999999999
+          },
+          {
+            "from": 568464335958,
+            "durationMs": 126.609,
+            "Scripting": 0.07400000000000001,
+            "Rendering": 84.164,
+            "Painting": 38.80500000000001,
+            "OtherOrIdle": 3.566
+          },
+          {
+            "from": 568464462580,
+            "durationMs": 0.021,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.021
+          },
+          {
+            "from": 568464462602,
+            "durationMs": 0.046,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.046
+          },
+          {
+            "from": 568464462652,
+            "durationMs": 0.507,
+            "Scripting": 0.396,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.111
+          },
+          {
+            "from": 568464463160,
+            "durationMs": 0.015,
+            "Scripting": 0,
+            "Rendering": 0,
+            "Painting": 0,
+            "OtherOrIdle": 0.015
+          }
+        ]
+      }
+    }
+  ]
+}
