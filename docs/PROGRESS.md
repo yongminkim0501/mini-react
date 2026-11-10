@@ -1,6 +1,6 @@
 # 진행 현황
 
-최종 갱신: 2026-11-10 · 브랜치: `feat/scenario-a-lab-harness` (`feat/phase2-components-hooks`에서 분기. `develop`에는 엔진 코드가 없어 사용자 확인 후 결정, [D-A01](./decisions.md))
+최종 갱신: 2026-11-10 (작업 A-2) · 브랜치: `feat/scenario-a-lab-harness` (`feat/phase2-components-hooks`에서 분기. `develop`에는 엔진 코드가 없어 사용자 확인 후 결정, [D-A01](./decisions.md))
 
 모듈을 추가하거나 상태가 바뀔 때마다 이 문서를 함께 갱신한다. 모듈별 상세 설계는 각 기획서(`docs/*.md`), 알려진 문제는 [`risk_issue/README.md`](../risk_issue/README.md)를 본다.
 
@@ -12,6 +12,7 @@
 | Phase 1 | 화면(실제 영역, 테스트 영역, Patch/뒤로가기/앞으로가기 버튼) | 완료 (Chrome 확인, PR #2) |
 | Phase 2 | 함수형 컴포넌트, state, hooks (`useState`, `useEffect`, `useMemo`), Todo 데모 | 완료 (Chrome 확인) |
 | 작업 A | 측정용 히트맵 탐색기(stack 엔진), 계측 훅, 시나리오 러너, HUD | 완료 (Chrome 측정) |
+| 작업 A-2 | 배포 지연 추적 화면 전환, 주사율 추정·워밍업·교차 측정, stack 기준선(`baseline-stack`) | 완료 ([기준선](./results/stack-baseline.md)) |
 
 제약: 바닐라 JS/TS만 사용하고 상용 프레임워크는 쓰지 않는다. Vite, Vitest, jsdom, TypeScript는 개발 도구로만 쓴다.
 
@@ -62,7 +63,8 @@ setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
 | useMemo | `src/runtime/hooks/useMemo.ts`, `src/runtime/index.ts` | [phase2-08-use-memo.md](./phase2-08-use-memo.md) | `useMemo` | 완료 | 6854bf2, 227135c |
 | Todo 데모 | `phase2/` | [phase2-09-demo-page.md](./phase2-09-demo-page.md) | `App`, `createDebugPanel` | 완료 | 5323f7f, d362ea6 |
 | 계측 훅 | `src/runtime/instrument.ts` (+ FunctionComponent 호출 3곳) | [decisions.md](./decisions.md) D-A02·03 | `setInstrumentation` | 완료 | 작업 A |
-| 히트맵 탐색기·측정 도구 | `lab/` | [README](../README.md), [decisions.md](./decisions.md) | `createEngine`, `startTransition`, `createMetrics`, `SCENARIOS` | 완료 | 작업 A |
+| 배포 지연 추적·측정 도구 | `lab/` | [README](../README.md), [decisions.md](./decisions.md) | `createEngine`, `isImplemented`, `startTransition`, `createMetrics`, `createRunner`, `SCENARIOS` | 완료 | 작업 A, A-2 |
+| stack 기준선 | `docs/results/stack-baseline.*`, `lab/dev/make-baseline.mjs` | [decisions.md](./decisions.md) D-A27·28 | - | 고정 (태그 `baseline-stack`) | 작업 A-2 |
 
 ## 4. 모듈별 요약
 
@@ -136,7 +138,7 @@ setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
 ## 5. 테스트
 
 
-`npm run test:run` 기준 24개 파일, 273개 통과. `npm run build`(세 페이지) 성공. `npm run typecheck` 오류 없음.
+`npm run test:run` 기준 25개 파일, 286개 통과. `npm run build`(세 페이지) 성공. `npm run typecheck` 오류 없음.
 
 | 파일 | 내용 |
 |------|------|
@@ -163,7 +165,8 @@ setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
 | `phase2/src/App.test.ts` | 데모 시나리오 1~8, Hook 7칸, DOM 재사용, 디버그 패널 |
 | `setup.test.ts` | jsdom 동작 확인 |
 | `runtime/instrument.test.ts` | 계측 훅 미등록 시 무동작, 호출 순서·patch 수, 훅 오류 격리 |
-| `lab/lab.test.js` | percentile, 같은 시드 → 같은 데이터, burn 단조성, URL 파라미터 |
+| `lab/lab.test.js` | percentile, 같은 시드 → 같은 데이터, 장애 시나리오(계단식 배포, 503 위치, 지연 상승), burn 단조성, 주사율 추정·끊김 판정, URL 파라미터 |
+| `lab/runner.test.js` | 엔진별 워밍업 후 번갈아 실행, 구현 안 된 엔진 건너뛰기 |
 
 ## 6. 주요 결정
 
@@ -193,7 +196,8 @@ setState ──scheduleUpdate(마이크로태스크, 묶음)──▶ update()
 
 ## 8. 다음 작업
 
-0. 작업 A 결과(stack, cellCost=0, S2 키 입력당 렌더+커밋 평균): 2k 8.8ms · 5k 17.4ms · 10k 33.2ms · 20k 66.7ms. 10k에서 50ms를 넘지 않는다. Fiber 엔진 연결 전에 기준 조건(셀 수, cellCost)을 정해야 한다.
+0. stack 기준선 고정(태그 `baseline-stack`, [표](./results/stack-baseline.md)). 메인 20k: S2 키 입력당 67.8ms, 입력 지연 p95 147.7ms. 이후 엔진·데이터 코드는 고치지 않는다(D-A27). Fiber는 `?engines=stack,fiber`로 같은 시간대에 번갈아 잰다.
+0. develop 통합: #28(Phase 1) 병합 → phase2 병합 순서여야 한다. 조사 결과는 작업 A-2 완료 보고에 있다.
 
 1. PR #2(`feat/virtual-dom-vnode` → `develop`) 병합 후 Phase 2 PR 생성.
 2. RT-02/RT-03, EV-01 대응.
