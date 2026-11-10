@@ -46,3 +46,18 @@ describe('러너', () => {
     await expect(runner.runScenario('X', 1, ['fiber'])).rejects.toThrow('실행할 수 있는 엔진이 없습니다');
   });
 });
+
+it('alternates all six app/engine configurations after one warmup each', async () => {
+  const log=[];let active;
+  const runner=createRunner({
+    metrics:fakeMetrics([]), appVariants:['current','cached'],
+    host:{isImplemented:()=>true, activate:(mode,app)=>{active=`${app}/${mode}`;},resetApp:async()=>{}},
+    info:{size:20000,seed:42,cellCost:0},
+    scenarios:{X:{title:'X',description:'',run:async()=>log.push(active)}},
+  });
+  const results=await runner.runScenario('X',3,['stack','fiber','fiber-bailout']);
+  const order=['current/stack','current/fiber','current/fiber-bailout','cached/stack','cached/fiber','cached/fiber-bailout'];
+  expect(log).toEqual([...order,...order,...order,...order]);
+  expect(results.map(r=>`${r.appVariant}/${r.engine}`)).toEqual(order);
+  for(const result of results){expect(result.perRun).toHaveLength(3);expect(result.warmupDiscarded).toBe(1);}
+});

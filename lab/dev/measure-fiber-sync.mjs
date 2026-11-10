@@ -6,9 +6,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import { execFileSync } from 'node:child_process';
 
+const isB4 = process.argv.includes('--b4');
 const isB2 = process.argv.includes('--b2');
 const isB3 = process.argv.includes('--b3');
-const engines = isB3 ? ['stack','fiber-slice','fiber'] : isB2 ? ['stack', 'fiber-sync', 'fiber-slice'] : ['stack', 'fiber-sync'];
+const engines = isB4 ? ['stack','fiber','fiber-bailout'] : isB3 ? ['stack','fiber-slice','fiber'] : isB2 ? ['stack', 'fiber-sync', 'fiber-slice'] : ['stack', 'fiber-sync'];
 const output = process.argv[2] ?? '/private/tmp/fiber-b1-results';
 const provenance = {
   codeCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
@@ -65,8 +66,8 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 2, mobile: false });
   // Explicitly disable artificial CPU/network throttling, leave display refresh/power unchanged.
   await send('Emulation.setCPUThrottlingRate', { rate: 1 });
-  await navigate(`engines=${engines.join(',')}&size=20000&seed=42&cellCost=0&runs=3&autorun=1`);
-  const deadline = Date.now() + 600_000;
+  await navigate(`engines=${engines.join(',')}&size=20000&seed=42&cellCost=0&runs=3&autorun=1${isB4 ? '&apps=current,cached' : ''}`);
+  const deadline = Date.now() + (isB4 ? 1800_000 : 600_000);
   while (Date.now() < deadline) {
     const status = await evaluate('window.__lab && ({done:__lab.done,error:__lab.error,results:__lab.results.length})');
     if (status?.error) throw new Error(status.error);
@@ -75,8 +76,9 @@ try {
   }
   const lab = await evaluate('JSON.parse(JSON.stringify(window.__lab))');
   if (!lab?.done) throw new Error('Benchmark timeout');
-  await writeFile(`${output}/${isB3 ? 'fiber' : isB2 ? 'fiber-slice' : 'fiber-sync'}-cross.json`, JSON.stringify({ ...lab, provenance }, null, 2));
-  console.log(JSON.stringify(lab.results.map((r) => ({ scenario: r.scenario, engine: r.engine, update: r.average.updateMean, longest: r.average.longTaskMax }))));
+  await writeFile(`${output}/${isB4 ? 'fiber-bailout' : isB3 ? 'fiber' : isB2 ? 'fiber-slice' : 'fiber-sync'}-cross.json`, JSON.stringify({ ...lab, provenance }, null, 2));
+  console.log(JSON.stringify(lab.results.map((r) => ({ scenario: r.scenario, engine: r.engine, app: r.appVariant, update: r.average.updateMean, longest: r.average.longTaskMax }))));
+  if (isB4) { socket.close(); process.exit(0); }
   const traceInfo = [];
   for (const mode of isB3 ? ['fiber'] : isB2 ? ['stack', 'fiber-slice'] : ['stack', 'fiber-sync']) {
     for (const scenario of isB2 || isB3 ? ['S2', 'S4'] : ['S2']) {

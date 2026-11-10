@@ -1,4 +1,5 @@
 import type { Child } from '../runtime/types';
+import { count, newCounters } from './counters';
 import { commitRoot } from './commit';
 import { performUnitOfWork, prepareRoot } from './workLoop';
 import type { EngineEvent, FiberNode, PassiveEffect, RenderHost } from './types';
@@ -6,6 +7,7 @@ import type { SliceScheduler } from './scheduler';
 import { AllLanes, DefaultLane, highestLane, SyncLane } from './lanes';
 
 export class FiberRoot implements RenderHost {
+  counters = newCounters();
   current: FiberNode | null = null;
   workInProgress: FiberNode | null = null;
   alive = false;
@@ -37,6 +39,7 @@ export class FiberRoot implements RenderHost {
     private readonly emit: (event: EngineEvent) => void,
     private readonly scheduler?: SliceScheduler,
     readonly laneAware = false,
+    readonly bailout = false,
   ) {}
 
   mount() {
@@ -90,7 +93,7 @@ export class FiberRoot implements RenderHost {
       lane: this.laneAware ? this.renderLane : undefined, ...extra,
     });
     if (this.laneAware && this.nextUnit && highestLane(this.pendingLanes) < this.renderLane) {
-      event('renderAbort', { activeMs: this.activeMs });
+      event('renderAbort', { activeMs: this.activeMs, counters: this.counters });
       this.nextUnit = null;
       this.workInProgress = null;
       this.effects = [];
@@ -137,7 +140,7 @@ export class FiberRoot implements RenderHost {
     const commitStart = performance.now();
     const renderActiveMs = this.activeMs;
     try {
-      if (mounted) this.container.replaceChildren();
+      if (mounted) { this.container.replaceChildren(); count(this, false, 'liveDomWrites'); }
       commitRoot(this);
     } catch (error) {
       this.lastError = error;
@@ -149,12 +152,13 @@ export class FiberRoot implements RenderHost {
     if (this.laneAware) {
       this.pendingLanes = 0;
       for (const hook of this.current!.hooks) {
+        count(this, false, 'commitHookVisits');
         if (hook.kind !== 'state') continue;
         for (const update of [...hook.baseQueue, ...hook.queue.updates]) this.pendingLanes |= update.lane;
       }
       this.scheduled = this.pendingLanes !== 0;
     }
-    event('commit', { mounted, patchCount, activeMs: this.activeMs, renderActiveMs, idle: !this.scheduled });
+    event('commit', { mounted, patchCount, activeMs: this.activeMs, renderActiveMs, idle: !this.scheduled, counters: this.counters });
     this.passive.push(...this.effects);
     this.effects = [];
     this.queuePassive();

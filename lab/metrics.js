@@ -194,7 +194,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
       return;
     }
     if (event.type === 'renderAbort') {
-      openSession()?.aborts.push({ t: event.t, attemptId: event.attemptId, lane: event.lane, activeMs: event.activeMs });
+      openSession()?.aborts.push({ t: event.t, attemptId: event.attemptId, lane: event.lane, activeMs: event.activeMs, counters: event.counters });
       for (const p of [...pendingInputs,...pendingClicks]) {
         if (p.attemptId === event.attemptId) { p.renderStartAt = null; p.attemptId = null; }
       }
@@ -229,6 +229,7 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
           mounted: Boolean(event.mounted),
           lane: event.lane,
           renderActiveMs: event.renderActiveMs,
+          counters: event.counters,
           t: event.t,
         });
       }
@@ -410,6 +411,9 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
   if (!Number.isFinite(observedHz)) warnings.push('no-frame-samples');
 
   return {
+    counterTotals: sumCounters(updates),
+    counterSync: sumCounters(syncUpdates),
+    counterAborted: sumCounters(s.aborts ?? []),
     metricsVersion: METRICS_VERSION,
     preRunHz,
     warnings,
@@ -478,4 +482,12 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs, loafSu
       aborts:s.aborts ?? [], interactionEnd:s.interactionEnd, finalHeatmap:s.finalHeatmap,
     },
   };
+}
+
+/** Null means uninstrumented (stack), never zero. Raw attempt counters are retained. */
+function sumCounters(attempts) {
+  const present = attempts.map(a => a.counters).filter(Boolean);
+  if (!present.length) return null;
+  return Object.fromEntries(['total','inside','outside'].map(scope => [scope,
+    Object.fromEntries(Object.keys(present[0][scope]).map(key => [key, present.reduce((sum,c) => sum+c[scope][key],0)]))]));
 }

@@ -1,6 +1,7 @@
-import type { Child, Component, ElementProps, HNode } from '../runtime/types';
+import type { Child, Component, ElementProps, HNode, HElement, VComponent } from '../runtime/types';
 import type { Namespace } from '../core/vnode-to-dom/namespace';
 import type { PropsDiff } from '../core/diff/types';
+import type { AttemptCounters } from './counters';
 import type { StateUpdate } from './updateQueue';
 
 export type Action = unknown | ((previous: any) => unknown);
@@ -19,6 +20,14 @@ export type Hook =
   | { kind: 'effect'; deps: readonly unknown[] | undefined; cell: EffectCell };
 export interface PassiveEffect { cell: EffectCell; create: () => void | (() => void) }
 
+export interface Boundary {
+  vnode: VComponent;
+  path: string;
+  index: number;
+  output: HElement | null;
+  host: FiberNode | null;
+  nested: Boundary[];
+}
 /** Pure function components are transparent expansion frames, not identity boundaries. */
 export interface Expansion {
   nodes: readonly HNode[];
@@ -27,6 +36,11 @@ export interface Expansion {
   outputDepths: number[];
   key: string | undefined;
   depth: number;
+  path: string;
+  startIndex: number;
+  prefixText: boolean;
+  vnode?: VComponent;
+  records: Boundary[];
 }
 export const Placement = 1;
 export const Update = 2;
@@ -55,6 +69,12 @@ export interface FiberNode {
   oldChild: FiberNode | null;
   tail: FiberNode | null;
   propsDiff: PropsDiff | null;
+  boundaries: Map<string, Boundary> | null;
+  boundaryVNodes: Map<VComponent, Boundary[]> | null;
+  boundaryIndices: Map<number, Boundary[]> | null;
+  reuse: Map<number, FiberNode> | null;
+  insideHeatmap: boolean;
+  childrenInsideHeatmap: boolean;
 }
 export interface EngineEvent {
   type: 'renderStart' | 'renderEnd' | 'commit' | 'renderError' | 'renderSlice' | 'renderAbort';
@@ -70,6 +90,7 @@ export interface EngineEvent {
   lane?: number;
   renderActiveMs?: number;
   idle?: boolean;
+  counters?: AttemptCounters;
 }
 export interface RenderHost {
   component: (props: any) => Child;
@@ -79,6 +100,8 @@ export interface RenderHost {
   rendering: boolean;
   alive: boolean;
   laneAware: boolean;
+  bailout: boolean;
+  counters: AttemptCounters;
   renderLane: number;
   effects: PassiveEffect[];
   placements: FiberNode[];

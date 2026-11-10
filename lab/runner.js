@@ -97,23 +97,24 @@ export async function collectEnvironment(metrics) {
  *   metrics: ReturnType<import('./metrics.js').createMetrics>,
  *   host: {
  *     isImplemented: (mode: string) => boolean,
- *     activate: (mode: string) => void,
+ *     activate: (mode: string, appVariant: string) => void,
  *     resetApp: () => Promise<void>,
  *     waitForIdle?: () => Promise<void>,
  *   },
+ *   appVariants?: string[],
  *   info: { size: number, seed: number, cellCost: number },
  *   onScenario?: (id: string | null, engine: string | null) => void,
  *   scenarios?: Record<string, { title: string, description: string, run: (ctx: any) => Promise<void> }>,
  * }} options
  */
-export function createRunner({ metrics, host, info, onScenario, scenarios = SCENARIOS }) {
+export function createRunner({ metrics, host, info, onScenario, scenarios = SCENARIOS, appVariants = ['current'] }) {
   let running = false;
   /** @type {any[]} */
   const results = [];
 
   /** 한 번 실행하고 요약을 돌려준다. */
-  async function runOnce(scenario, mode, run) {
-    host.activate(mode);
+  async function runOnce(scenario, mode, run, appVariant) {
+    host.activate(mode, appVariant);
     await host.resetApp();
     await metrics.calibrateRefresh();
     const ctx = createScenarioContext({ metrics, seed: info.seed * 1000 + run });
@@ -139,20 +140,22 @@ export function createRunner({ metrics, host, info, onScenario, scenarios = SCEN
     running = true;
     try {
       const environment = await collectEnvironment(metrics);
+      const configs = appVariants.flatMap(appVariant => modes.map(mode => ({ mode, appVariant, key: `${appVariant}/${mode}` })));
       // 워밍업: 엔진마다 1회, 결과는 버린다.
-      for (const mode of modes) {
-        onScenario?.(`${id} 워밍업`, mode);
-        await runOnce(scenario, mode, -1);
+      for (const { mode, appVariant } of configs) {
+        onScenario?.(`${id} 워밍업 / ${appVariant}`, mode);
+        await runOnce(scenario, mode, -1, appVariant);
       }
       /** @type {Record<string, any[]>} */
-      const perEngine = Object.fromEntries(modes.map((m) => [m, []]));
+      const perEngine = Object.fromEntries(configs.map(({key}) => [key, []]));
       for (let run = 0; run < runs; run++) {
-        for (const mode of modes) {
-          onScenario?.(`${id} ${run + 1}/${runs}`, mode);
-          perEngine[mode].push(await runOnce(scenario, mode, run));
+        for (const { mode, appVariant, key } of configs) {
+          onScenario?.(`${id} ${run + 1}/${runs} / ${appVariant}`, mode);
+          perEngine[key].push(await runOnce(scenario, mode, run, appVariant));
         }
       }
-      const created = modes.map((mode) => ({
+      const created = configs.map(({ mode, appVariant, key }) => ({
+        appVariant,
         scenario: id,
         title: scenario.title,
         description: scenario.description,
@@ -160,11 +163,11 @@ export function createRunner({ metrics, host, info, onScenario, scenarios = SCEN
         ...info,
         runs,
         warmupDiscarded: 1,
-        order: modes.length > 1 ? 'alternating' : 'single',
+        order: configs.length > 1 ? 'alternating' : 'single',
         skippedEngines: skipped,
         environment,
-        average: averageRuns(perEngine[mode]),
-        perRun: perEngine[mode],
+        average: averageRuns(perEngine[key]),
+        perRun: perEngine[key],
       }));
       results.push(...created);
       return created;
@@ -207,7 +210,7 @@ export function renderResults(root, results) {
   const table = document.createElement('table');
   table.className = 'results';
   const head = table.createTHead().insertRow();
-  for (const label of ['시나리오', '엔진', '셀 수', '주사율', '반복', ...TABLE_COLUMNS.map((c) => c[1])]) {
+  for (const label of ['시나리오', '앱', '엔진', '셀 수', '주사율', '반복', ...TABLE_COLUMNS.map((c) => c[1])]) {
     const th = document.createElement('th');
     th.textContent = label;
     head.appendChild(th);
@@ -219,7 +222,7 @@ export function renderResults(root, results) {
     const runHz = r.perRun?.map((run) => run.preRunHz).filter(Number.isFinite);
     const warning = r.environment?.refreshWarning || r.perRun?.some((run) => run.warnings?.length);
     const hzText = `${runHz?.length ? runHz.join('/') : Number.isFinite(hz) ? hz : '?'}Hz${warning ? ' ⚠' : ''}`;
-    for (const v of [r.scenario, r.engine, r.size.toLocaleString(), hzText, `${r.runs}(+워밍업 ${r.warmupDiscarded})`]) {
+    for (const v of [r.scenario, r.appVariant ?? 'current', r.engine, r.size.toLocaleString(), hzText, `${r.runs}(+워밍업 ${r.warmupDiscarded})`]) {
       row.insertCell().textContent = v;
     }
     for (const [key, , digits] of TABLE_COLUMNS) {

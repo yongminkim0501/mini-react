@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFiberEngine, h, useMemo, useState } from './index';
+import { createFiberBailoutEngine, createFiberEngine, h, useMemo, useState } from './index';
 import { runWithLane, SyncLane, TransitionLane } from './lanes';
 import { SliceScheduler } from './scheduler';
 import { prepareRoot, performUnitOfWork } from './workLoop';
@@ -9,13 +9,13 @@ import type { VComponent } from '../runtime/types';
 
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
 
-/** A proposed cache fixture, not a change to the frozen lab application. No bailout. */
-function fixture() {
+/** The approved cache contract, exercised with both lane-aware engines. */
+function fixture(bailout = false) {
   let clock = 0;
   vi.spyOn(performance, 'now').mockImplementation(() => clock += 0.5);
   const tasks: (() => void)[] = [], microtasks: (() => void)[] = [];
   const scheduler = new SliceScheduler(() => performance.now(), (fn) => tasks.push(fn), true, (fn) => microtasks.push(fn));
-  const engine = createFiberEngine(scheduler);
+  const engine = (bailout ? createFiberBailoutEngine : createFiberEngine)(scheduler);
   const container = document.createElement('div'); document.body.append(container);
   const observations: {
     query: string; matches: string; selected: number;
@@ -24,7 +24,7 @@ function fixture() {
   }[] = [];
   let setQuery!: (value: string) => void, setMatches!: (value: string) => void;
   function Heatmap({ matches, selected, onSelect }: { matches: string; selected: number; onSelect: () => void }) {
-    return h('section', { onClick: onSelect }, Array.from({ length: 40 }, () => h('i', null, `${matches}/${selected}`)));
+    return h('section', { id: 'heatmap', onClick: onSelect }, Array.from({ length: 40 }, () => h('i', null, `${matches}/${selected}`)));
   }
   const root = engine.createRoot(() => {
     const [query, q] = useState('initial'); setQuery = q;
@@ -47,9 +47,9 @@ function fixture() {
     dispose: () => { root.unmount(); engine.dispose(); } };
 }
 
-describe('B-4 prerequisite gates (B-3 engine, no bailout implementation)', () => {
+describe.each([false, true])('B-4 prerequisite gates (bailout=%s)', (bailout) => {
   it('keeps the queue dispatch and onSelect identity across committed renders and functional updates', () => {
-    const f=fixture();
+    const f=fixture(bailout);
     try {
       const first=f.observations[0]!;
       const state=f.root.instance.current!.hooks[2]!;
@@ -70,7 +70,7 @@ describe('B-4 prerequisite gates (B-3 engine, no bailout implementation)', () =>
   });
 
   it('reuses the last committed heatmap VNode in Sync after a Transition computed and then discarded another memo value', () => {
-    const f=fixture();
+    const f=fixture(bailout);
     try {
       const committed=f.root.instance.current!, baseline=f.observations[0]!;
       f.engine.startTransition(()=>f.setMatches('new matches'));f.tasks.shift()!();
@@ -95,7 +95,7 @@ describe('B-4 prerequisite gates (B-3 engine, no bailout implementation)', () =>
   });
 
   it('commits a changed output without walking a clean heatmap descendant list', () => {
-    const f=fixture();
+    const f=fixture(bailout);
     let clean: FiberNode | undefined;
     let descriptor: PropertyDescriptor | undefined;
     try {

@@ -190,6 +190,7 @@ describe('주사율과 프레임 예산', () => {
     expect(summary.progressDropped).toBe(1); // 40 > 34.3
     expect(summary.inputP95).toBe(300);
     expect(summary.inputEventP95).toBe(100);
+    expect(summary.counterTotals).toBeNull();
   });
 
   it('프레임이 없으면 실행 전 예산을 쓴다', () => {
@@ -202,6 +203,7 @@ describe('URL 파라미터', () => {
   it('기본값과 해석', () => {
     expect(parseParams('')).toMatchObject({ engine: 'stack', engines: ['stack'], size: 20000, seed: 42, cellCost: 0, runs: 3, autorun: false, save: false });
     expect(parseParams('?engine=fiber&size=5000&seed=7&cellCost=0.01&scenario=S2&runs=2&autorun=1&hud=record&save=1')).toEqual({
+      appVariants: ['current'],
       engine: 'fiber',
       engines: ['fiber'],
       size: 5000,
@@ -216,6 +218,9 @@ describe('URL 파라미터', () => {
   });
 
   it('engines는 engine보다 우선하고 중복을 없앤다', () => {
+    expect(parseParams('?apps=current,cached,cached')).toMatchObject({appVariants:['current','cached']});
+    expect(parseParams('?app=cached')).toMatchObject({appVariants:['cached']});
+    expect(parseParams('?app=invalid')).toMatchObject({appVariants:['current']});
     expect(parseParams('?engine=fiber&engines=stack, fiber,stack')).toMatchObject({ engine: 'stack', engines: ['stack', 'fiber'] });
   });
 });

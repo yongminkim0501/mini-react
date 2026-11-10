@@ -18,7 +18,10 @@ export function parseParams(search) {
     .map((s) => s.trim())
     .filter(Boolean);
   const engines = list.length ? [...new Set(list)] : ['stack'];
+  const appVariants = [...new Set((p.get('apps') ?? p.get('app') ?? 'current')
+    .split(',').map(s => s.trim()).filter(s => ['current', 'cached'].includes(s)))];
   return {
+    appVariants: appVariants.length ? appVariants : ['current'],
     engine: engines[0],
     engines,
     size: clampSize(num('size', 20000)),
