@@ -119,16 +119,17 @@ describe('장애 시나리오', () => {
 });
 
 describe('burn', () => {
-  it('burn(2)가 burn(1)보다 오래 걸린다 (중앙값 비교)', () => {
+  it('burn(2)가 burn(1)보다 오래 걸린다 (최솟값 비교)', () => {
     calibrate({ samples: 3, iterations: 500_000 });
+    // 다른 테스트 파일과 병렬로 돌 때 끼어들기는 시간을 늘리기만 하므로, 최솟값이 실제 연산 시간에 가장 가깝다.
     const time = (ms) => {
-      const samples = [];
-      for (let i = 0; i < 7; i++) {
+      let best = Infinity;
+      for (let i = 0; i < 11; i++) {
         const start = performance.now();
         burn(ms);
-        samples.push(performance.now() - start);
+        best = Math.min(best, performance.now() - start);
       }
-      return percentile(samples, 50);
+      return best;
     };
     burn(1); // 워밍업
     expect(time(2)).toBeGreaterThan(time(1));

@@ -83,9 +83,10 @@ export async function collectEnvironment(metrics) {
  *   },
  *   info: { size: number, seed: number, cellCost: number },
  *   onScenario?: (id: string | null, engine: string | null) => void,
+ *   scenarios?: Record<string, { title: string, description: string, run: (ctx: any) => Promise<void> }>,
  * }} options
  */
-export function createRunner({ metrics, host, info, onScenario }) {
+export function createRunner({ metrics, host, info, onScenario, scenarios = SCENARIOS }) {
   let running = false;
   /** @type {any[]} */
   const results = [];
@@ -106,7 +107,7 @@ export function createRunner({ metrics, host, info, onScenario }) {
    * @param {readonly string[]} engines
    */
   async function runScenario(id, runs, engines) {
-    const scenario = SCENARIOS[id];
+    const scenario = scenarios[id];
     if (!scenario) throw new Error(`알 수 없는 시나리오: ${id}`);
     if (running) throw new Error('이미 실행 중입니다');
     const modes = engines.filter((m) => host.isImplemented(m));
