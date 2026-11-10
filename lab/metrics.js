@@ -10,8 +10,10 @@
 import { max, percentile, summarize } from './stats.js';
 
 export const LONG_TASK_MS = 50;
-/** 끊긴 프레임 = 프레임 예산의 이 배수 초과 */
+/** 끊긴 프레임 = 프레임 예산의 이 배수 + JANK_TOLERANCE_MS 초과 */
 export const JANK_FACTOR = 2;
+/** 타이머 반올림(16.6~16.8ms 등)으로 정상 프레임이 경계에 걸리지 않게 하는 여유 */
+export const JANK_TOLERANCE_MS = 1;
 /** 주사율 추정 전 기본값 */
 export const DEFAULT_HZ = 60;
 const LIVE_FRAMES = 180;
@@ -293,11 +295,13 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
  */
 export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
   const duration = endedAt - s.startedAt;
-  // 실행 중 주사율이 바뀔 수 있으므로(절전으로 120→60→30Hz) 이 실행에서 관측한 주사율로 예산을 정한다.
-  // 관측값은 가장 조용한 30프레임 구간 기준이라 끊김이 많아도 크게 흔들리지 않는다. 관측할 수 없으면 실행 전 추정을 쓴다.
-  const observedHz = estimateRefreshHz(s.frames);
+  // 실행 중 주사율이 바뀔 수 있으므로(절전으로 120→60→30Hz) 이 실행의 프레임 간격 중앙값으로 예산을 정한다.
+  // 긴 프레임은 시간은 많이 차지해도 개수는 적어 중앙값을 끌어내리지 못한다. 프레임이 없으면 실행 전 추정을 쓴다.
+  const observedHz = estimateRefreshHz(s.frames, Infinity);
+  // 가장 조용한 30프레임 구간 기준 주사율. 중앙값 기준과 다르면 실행 도중 주사율이 바뀐 것이다.
+  const quietestHz = estimateRefreshHz(s.frames);
   const runBudgetMs = Number.isFinite(observedHz) ? frameBudgetMs(observedHz) : budgetMs;
-  const jankMs = runBudgetMs * JANK_FACTOR;
+  const jankMs = runBudgetMs * JANK_FACTOR + JANK_TOLERANCE_MS;
   const tasks = s.longTasks.filter((t) => t.start >= s.startedAt && t.start <= endedAt);
   const updates = s.updates.filter((u) => !u.mounted);
   const progressGaps = [];
@@ -313,8 +317,10 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
     durationMs: duration,
     /** 끊김 판정에 쓴 프레임 예산 */
     frameBudgetMs: runBudgetMs,
-    /** 이 실행의 프레임 간격으로 추정한 주사율. 끊김 판정 기준이다. */
+    /** 이 실행의 프레임 간격 중앙값으로 추정한 주사율. 끊김 판정 기준이다. */
     refreshHzObserved: observedHz,
+    /** 가장 조용한 구간 기준 주사율과 3Hz 넘게 다르면 1 (실행 도중 주사율 변경). 평균하면 그런 실행의 비율이 된다. */
+    refreshUnstable: Number.isFinite(observedHz) && Number.isFinite(quietestHz) && Math.abs(observedHz - quietestHz) > 3 ? 1 : 0,
     /** 실행 시작 전 추정으로 정한 예산 (비교용) */
     preRunBudgetMs: budgetMs,
     frameP50: frames.p50,
