@@ -165,26 +165,34 @@ describe('주사율과 프레임 예산', () => {
     expect(isNon60Hz(NaN)).toBe(true);
   });
 
-  it('끊긴 프레임은 예산의 2배 초과로 센다', () => {
+  it('끊긴 프레임은 실행 중 관측한 주사율 예산의 2배 초과로 센다', () => {
+    // 60Hz로 도는 실행: 조용한 구간은 16.7ms, 중간에 긴 프레임 두 개
+    const frames = [...Array(30).fill(16.7), 40, 20, ...Array(30).fill(16.7)];
+    const frameEnds = frames.map((_, i) => (i + 1) * 17);
     const session = {
       startedAt: 0,
-      frames: [10, 20, 30, 40],
-      frameEnds: [10, 30, 60, 100],
+      frames,
+      frameEnds,
       longTasks: [],
       input: [{ main: 300, event: 100 }],
       click: [],
       updates: [],
-      progressCommits: [0, 10, 40, 60],
+      progressCommits: [0, 17, 57, 74],
     };
-    const at60 = summarizeSession(session, 100, true, 1000 / 60);
-    expect(at60.framesJank).toBe(1); // 40 > 33.3
-    expect(at60.progressDropped).toBe(0);
-    const at120 = summarizeSession(session, 100, true, 1000 / 120);
-    expect(at120.framesJank).toBe(3); // 20, 30, 40 > 16.7
-    expect(at120.progressDropped).toBe(2); // 30, 20 > 16.7
-    expect(at60.refreshHzObserved).toBe(Math.round(1000 / 25));
-    expect(at60.inputP95).toBe(300);
-    expect(at60.inputEventP95).toBe(100);
+    // 실행 전 추정이 120Hz였어도 관측한 60Hz 기준으로 판정한다 (60Hz 프레임을 끊김으로 세지 않음)
+    const summary = summarizeSession(session, 2000, true, 1000 / 120);
+    expect(summary.refreshHzObserved).toBe(60);
+    expect(summary.frameBudgetMs).toBeCloseTo(16.67, 1);
+    expect(summary.preRunBudgetMs).toBeCloseTo(8.33, 1);
+    expect(summary.framesJank).toBe(1); // 40 > 33.3, 20은 아님
+    expect(summary.progressDropped).toBe(1); // 40 > 33.3
+    expect(summary.inputP95).toBe(300);
+    expect(summary.inputEventP95).toBe(100);
+  });
+
+  it('프레임이 없으면 실행 전 예산을 쓴다', () => {
+    const empty = { startedAt: 0, frames: [], frameEnds: [], longTasks: [], input: [], click: [], updates: [], progressCommits: [] };
+    expect(summarizeSession(empty, 100, true, 1000 / 120).frameBudgetMs).toBeCloseTo(8.33, 1);
   });
 });
 
