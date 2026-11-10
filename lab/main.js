@@ -122,8 +122,8 @@ function main() {
     const ids = params.scenario ? params.scenario.split(',') : Object.keys(SCENARIOS);
     (async () => {
       try {
-        // 첫 마운트 직후 레이아웃 안정화를 기다린다.
-        await new Promise((r) => setTimeout(r, 1000));
+        // 첫 마운트 직후에는 래스터·레이아웃으로 프레임이 한동안 느리다. 안정될 때까지 기다린다.
+        await new Promise((r) => setTimeout(r, 3000));
         for (const id of ids) {
           await runner.runScenario(id, params.runs, params.engines);
           renderResults($('results'), runner.results);
