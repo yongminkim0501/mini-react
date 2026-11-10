@@ -25,7 +25,7 @@ export function createScenarioContext({ metrics, seed }) {
     sleep,
     sleepUntil,
 
-    /** 데이터 재생성 버튼 클릭 */
+    /** 새 데이터 수신 버튼 클릭 */
     regenerate() {
       /** @type {HTMLButtonElement} */ (byId('regen')).click();
     },
@@ -61,8 +61,11 @@ export function createScenarioContext({ metrics, seed }) {
   };
 }
 
-/** 타이핑할 20글자. 데이터 태그 형식이라 입력할수록 매칭이 좁혀진다. */
-export const TYPING_TEXT = 'northeast-delta-1742';
+/**
+ * 타이핑할 19글자. 장애 대응자가 "새 배포 + 503"이 겹친 칸을 찾는 검색어다.
+ * 'd'에서 모든 셀이 매칭되고, '2'에서 새 배포 셀로, ' err-503'에서 에러 셀로 좁혀진다.
+ */
+export const TYPING_TEXT = 'deploy-1742 err-503';
 
 /**
  * @type {Record<string, { title: string, description: string, run: (ctx: ScenarioContext) => Promise<void> }>}
@@ -70,7 +73,7 @@ export const TYPING_TEXT = 'northeast-delta-1742';
 export const SCENARIOS = {
   S1: {
     title: 'S1 대규모 업데이트',
-    description: '데이터 재생성을 2초 간격으로 3회',
+    description: '새 데이터 수신을 2초 간격으로 3회',
     async run(ctx) {
       const t0 = performance.now();
       for (let i = 0; i < 3; i++) {
@@ -82,7 +85,7 @@ export const SCENARIOS = {
   },
   S2: {
     title: 'S2 타이핑',
-    description: `100ms 간격으로 20글자 입력 ("${TYPING_TEXT}")`,
+    description: `100ms 간격으로 ${TYPING_TEXT.length}글자 입력 ("${TYPING_TEXT}")`,
     async run(ctx) {
       const t0 = performance.now();
       for (let i = 0; i < TYPING_TEXT.length; i++) {
@@ -95,7 +98,7 @@ export const SCENARIOS = {
   },
   S3: {
     title: 'S3 클릭',
-    description: '재생성 직후 200ms 간격으로 셀 클릭 10회',
+    description: '새 데이터 수신 직후 200ms 간격으로 셀 클릭 10회',
     async run(ctx) {
       ctx.regenerate();
       const t0 = performance.now();
@@ -109,7 +112,7 @@ export const SCENARIOS = {
   },
   S4: {
     title: 'S4 애니메이션',
-    description: '5초 동안 재생성을 연속 실행하며 진행 바 fps와 끊긴 프레임 측정',
+    description: '5초 동안 새 데이터 수신을 연속 실행하며 실시간 수신 표시 fps와 끊긴 프레임 측정',
     async run(ctx) {
       const end = performance.now() + 5000;
       while (performance.now() < end) {

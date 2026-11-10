@@ -16,6 +16,13 @@ import {
 } from '../src/runtime/index.ts';
 
 export const ENGINE_MODES = /** @type {const} */ (['stack', 'fiber-sync', 'fiber-slice', 'fiber']);
+/** 지금 구현된 모드. 러너는 나머지를 건너뛰고 결과에 skippedEngines로 남긴다. */
+export const IMPLEMENTED_MODES = /** @type {const} */ (['stack']);
+
+/** @param {string} mode */
+export function isImplemented(mode) {
+  return IMPLEMENTED_MODES.includes(/** @type {any} */ (mode));
+}
 
 /** @type {{ startTransition(fn: () => void): void } | null} */
 let activeEngine = null;
