@@ -289,11 +289,15 @@ export function createMetrics({ getEchoText, getSelectedSeq, appLabel = 'heatmap
  * @param {any} s
  * @param {number} endedAt
  * @param {boolean} longTaskSupported
- * @param {number} budgetMs 프레임 예산
+ * @param {number} budgetMs 실행 전 추정으로 정한 프레임 예산. 실행 중 관측이 불가능할 때만 쓴다.
  */
 export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
   const duration = endedAt - s.startedAt;
-  const jankMs = budgetMs * JANK_FACTOR;
+  // 실행 중 주사율이 바뀔 수 있으므로(절전으로 120→60→30Hz) 이 실행에서 관측한 주사율로 예산을 정한다.
+  // 관측값은 가장 조용한 30프레임 구간 기준이라 끊김이 많아도 크게 흔들리지 않는다. 관측할 수 없으면 실행 전 추정을 쓴다.
+  const observedHz = estimateRefreshHz(s.frames);
+  const runBudgetMs = Number.isFinite(observedHz) ? frameBudgetMs(observedHz) : budgetMs;
+  const jankMs = runBudgetMs * JANK_FACTOR;
   const tasks = s.longTasks.filter((t) => t.start >= s.startedAt && t.start <= endedAt);
   const updates = s.updates.filter((u) => !u.mounted);
   const progressGaps = [];
@@ -307,9 +311,12 @@ export function summarizeSession(s, endedAt, longTaskSupported, budgetMs) {
 
   return {
     durationMs: duration,
-    frameBudgetMs: budgetMs,
-    /** 이 실행의 프레임 간격으로 다시 추정한 주사율 (진단용). 실행 중 주사율이 바뀌었는지 본다. */
-    refreshHzObserved: estimateRefreshHz(s.frames),
+    /** 끊김 판정에 쓴 프레임 예산 */
+    frameBudgetMs: runBudgetMs,
+    /** 이 실행의 프레임 간격으로 추정한 주사율. 끊김 판정 기준이다. */
+    refreshHzObserved: observedHz,
+    /** 실행 시작 전 추정으로 정한 예산 (비교용) */
+    preRunBudgetMs: budgetMs,
     frameP50: frames.p50,
     frameP95: frames.p95,
     frameMax: frames.max,
