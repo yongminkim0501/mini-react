@@ -407,3 +407,15 @@
 
 - **관측:** progress-only 실험에서 heatmap DOM 변경과 heatmap/row/cell 명명 invalidation은 0이었다. progress-thumb의 style invalidation과 문서 root Layout·document Paint는 반복됐으며 Layout의 최대 dirtyObjects는 6, 트리 크기는 20,696이었다. document Paint clip에는 heatmap 영역이 포함됐다.
 - **판단:** 문서 범위 paint 기록 비용은 있지만 이것이 모든 셀의 재배치·GPU 재래스터화 증명은 아니다. 수신 한 건의 셀 invalidation·dirtyObjects 증가는 별도로 확인됐다. B-2의 123ms 전부를 진행 바 때문이라고 귀속하지 않는다. 앱·CSS 수정은 하지 않았다.
+
+### B33 · 2026-11-10 · B-4 승인 전 전제 검증
+
+- **범위:** 사용자 설계 리뷰에 따라 기존 B-3의 전제 테스트와 B-4 문서를 보강한다. 이 리뷰를 B-4 착수 승인으로 해석하지 않는다. 실제 앱·엔진 구현은 바꾸지 않는다.
+- **확인:** setter는 큐당 한 번 생성돼 유지된다. useMemo 슬롯은 WIP에 저장되고 Commit 때 채택된다. 제안 캐시 fixture에서 폐기된 Transition의 VNode와 마지막 커밋 VNode를 구별하고, 이어지는 Sync Commit이 마지막 커밋 VNode 참조를 재사용하는 것을 테스트했다.
+- **확인:** Commit은 변경 목록과 루트 Hook 처리이며 전체 트리 DFS가 없다. 깨끗한 영역의 child 접근을 금지해도 외부 변경을 Commit할 수 있었다. return은 작업 복귀·삽입 부모에 사용되고 native 이벤트는 fiber 조상을 걷지 않는다. B-4 공유 경계의 안전성은 아직 구현 전이며 별도 gate다.
+
+### B34 · 2026-11-10 · B-4 rev2의 동일성·계약·측정
+
+- **제안:** 동일 위치의 VComponent 객체 ===를 비교한다. 경계 헤더의 WIP 연결과 flags 초기화, 공유 자손 미방문, 캐시 영역 변경 목록 미생성을 조건으로 둔다. 불변성·순수성 계약과 shallow freeze의 한계를 명시한다. Render/Commit 방문·함수 호출·실제 DOM 호출 카운터를 분리한다.
+- **제안:** React 기본 props 동일성 bailout+JSX 노드 useMemo에 대응시키며 React.memo의 prop별 비교와 구분한다. 공식 useMemo 문구와 v19.2.0 소스를 직접 확인했다. 매 Commit 차등은 허용되는 중간 스냅샷을 고려해 상태 버전/oracle로 정렬하고 document.title을 격리한다.
+- **범위:** rowsBase와 선택 행 배열을 두 useMemo로 만드는 클릭 최적화는 별도 후속안이다. slo/cellCost/null matches를 반영한 예시만 기록했고, 최소 B-4에 포함해 구현하지 않는다. [B-4 rev2](codex/B4-design.md).
