@@ -102,14 +102,14 @@ npm run dev
 | Long Task | `PerformanceObserver('longtask')`로 잰 50ms 초과 작업의 수와 최장 시간. 지원하지 않는 브라우저는 "측정 불가" |
 | **입력 지연 (메인)** | **예정 시각 기준.** 스크립트가 입력하려던 시각 → 그 값이 `#echo`에 반영된 커밋 이후 첫 rAF |
 | 입력 지연 (보조) | 실제 발사 시각 기준. `input` 이벤트 `timeStamp` → 같은 끝점 |
-| **클릭 지연 (메인)** | **예정 시각 기준.** 클릭하려던 시각 → 선택 정보(`#detail[data-seq]`)가 반영된 커밋 이후 첫 rAF |
+| **클릭 지연 (메인)** | **예정 시각 기준.** 클릭하려던 시각 → 각 클릭의 예상 seq에 도달한 커밋 이후 첫 rAF. 한 커밋 이전에 들어온 여러 클릭을 첫 클릭 반영만으로 모두 완료 처리하지 않음 |
 | 클릭 지연 (보조) | 실제 발사 시각 기준. `click` 이벤트 `timeStamp` → 같은 끝점 |
 | 렌더+커밋 / 작업 구간 | 업데이트 1건당 경과 시간 / 실제 작업 구간 합계. Fiber의 양보 대기는 작업 시간에서 제외한다. OS CPU 시간은 아니다. stack Commit은 diff 포함, Fiber Render는 reconciliation 포함이므로 합계를 비교하며 첫 마운트는 제외 |
 | 실행 전체 비용 / 처리량 | durationMs, activeTotalMs, 커밋 수·커밋/초, 수신 수. S4는 실행마다 수신·커밋 수가 달라 1건당 비용과 전체 비용을 구분 |
 | JS / 렌더링 우세 긴 프레임 | LoAF 50ms 초과 프레임을 아래 규칙으로 분류한 수와 **해당 프레임 전체 duration 합계**. JS·렌더링 구간 시간 합계도 별도 제공. 미지원은 측정 불가 |
 | 수신 표시 fps / 끊김 | 진행 바 루트의 초당 커밋 수 / 커밋 간격이 실행 전 예산 × 2 + 1ms를 넘은 횟수 |
 
-지표 버전은 `B1.5-fixed-pre-run-loaf`다. 실행별 JSON은 프레임 간격·진행 바 커밋·업데이트·LoAF·Long Task 원자료를 보존한다. B-1 JSON에는 간격 배열이 없으므로 소급 재계산하지 않고 B-2에서 세 엔진을 다시 측정한다.
+지표 버전은 `B1.5-fixed-pre-run-loaf-v2`다. 긴 프레임/Task는 측정 창과 겹치면 전체 duration을 포함하고 원래 시각과 `windowOverlap` 표시를 보존한다. 따라서 경계 프레임의 합계에는 창 밖의 일부 시간이 포함될 수 있다. 실행별 JSON은 프레임 간격·진행 바 커밋·업데이트·LoAF·Long Task 원자료를 보존한다. B-1 JSON에는 간격 배열이 없으므로 소급 재계산하지 않고 B-2에서 세 엔진을 다시 측정한다.
 
 LoAF의 `renderStart`는 rAF 콜백을 포함한 렌더링 시작, `styleAndLayoutStart`는 스타일·레이아웃 시작이다. 각 프레임에 전자 이전 구간, 두 경계 사이(rAF 등), 후자 이후 구간을 기록한다. `scriptMs = Σ(scripts.duration - forcedStyleAndLayoutDuration)`, `renderingMs = 프레임 끝 - styleAndLayoutStart + 강제 style/layout 시간`으로 나눠 큰 쪽을 우세 원인으로 분류한다(동률은 JS, 둘 다 0이면 미확인). 경계가 0이면 해당 렌더링 구간은 0으로 둔다. 분류별 시간은 프레임 전체 시간이며 별도 구간 합계와 혼동하지 않는다. `scripts`는 짧은 콜백이나 교차 출처 작업을 빠뜨릴 수 있고, renderingMs에도 렌더링 단계의 다른 콜백이 포함될 수 있다. **인과 확정이나 모든 JS의 정확한 CPU 시간으로 보지 않고 trace와 함께 확인한다.** [W3C LoAF 초안](https://w3c.github.io/long-animation-frames/)을 기준으로 기록한다.
 
