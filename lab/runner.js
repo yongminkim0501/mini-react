@@ -13,14 +13,25 @@ import { averageRuns } from './stats.js';
 /** 표에 보일 열. [키, 이름, 소수 자릿수]. 나머지 값은 JSON에 모두 들어간다. */
 export const TABLE_COLUMNS = [
   ['updateCount', '업데이트 수', 0],
+  ['receivedUpdates', '수신 수(실행 전체)', 0],
   ['updateMean', '렌더+커밋 평균(ms)', 1],
   ['updateMax', '렌더+커밋 최대(ms)', 1],
   ['renderMean', '렌더(ms)', 1],
   ['commitMean', '커밋(ms, 엔진별 구간)', 1],
   ['activeMean', '실행 구간 합계(ms)', 1],
+  ['activeTotalMs', '작업 시간 합계(ms, 실행 전체)', 1],
+  ['durationMs', '실행 전체(ms)', 1],
+  ['updatesPerSecond', '커밋/초', 1],
   ['patchMean', 'patch 수', 0],
   ['longTaskCount', 'Long Task 수', 1],
   ['longTaskMax', '최장 Long Task(ms)', 1],
+  ['loafJsCount', 'JS 우세 긴 프레임 수', 1],
+  ['loafJsFrameMs', 'JS 우세 프레임 합계(ms)', 1],
+  ['loafRenderingCount', '렌더링 우세 긴 프레임 수', 1],
+  ['loafRenderingFrameMs', '렌더링 우세 프레임 합계(ms)', 1],
+  ['loafUnknownCount', '원인 미확인 긴 프레임 수', 1],
+  ['loafScriptMs', 'LoAF 스크립트 합계(ms)', 1],
+  ['loafRenderingMs', 'LoAF 렌더링 합계(ms)', 1],
   ['inputP95', '입력 지연 p95(ms)', 1],
   ['inputEventP95', '└ 발사 시각 기준', 1],
   ['clickP95', '클릭 지연 p95(ms)', 1],
@@ -71,6 +82,7 @@ export async function collectEnvironment(metrics) {
     devicePixelRatio,
     hardwareConcurrency: navigator.hardwareConcurrency ?? null,
     longTaskSupported: metrics.longTaskSupported,
+    longAnimationFrameSupported: metrics.longAnimationFrameSupported,
   };
 }
 
@@ -81,6 +93,7 @@ export async function collectEnvironment(metrics) {
  *     isImplemented: (mode: string) => boolean,
  *     activate: (mode: string) => void,
  *     resetApp: () => Promise<void>,
+ *     waitForIdle?: () => Promise<void>,
  *   },
  *   info: { size: number, seed: number, cellCost: number },
  *   onScenario?: (id: string | null, engine: string | null) => void,
@@ -96,9 +109,11 @@ export function createRunner({ metrics, host, info, onScenario, scenarios = SCEN
   async function runOnce(scenario, mode, run) {
     host.activate(mode);
     await host.resetApp();
+    await metrics.calibrateRefresh();
     const ctx = createScenarioContext({ metrics, seed: info.seed * 1000 + run });
     metrics.start();
     await scenario.run(ctx);
+    await host.waitForIdle?.();
     return metrics.stop();
   }
 
@@ -162,7 +177,7 @@ export function createRunner({ metrics, host, info, onScenario, scenarios = SCEN
 
 /** 숫자 표시. NaN은 "측정 불가"(지원 안 됨) 또는 "-"(해당 없음) */
 export function formatValue(key, value, digits) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return key.startsWith('longTask') ? '측정 불가' : '-';
+  if (typeof value !== 'number' || Number.isNaN(value)) return /^(longTask|loaf)/.test(key) ? '측정 불가' : '-';
   return value.toFixed(digits);
 }
 
@@ -177,10 +192,10 @@ export function renderResults(root, results) {
     root.textContent = '아직 결과가 없습니다.';
     return;
   }
-  if (results.some((r) => r.environment?.refreshWarning)) {
+  if (results.some((r) => r.environment?.refreshWarning || r.perRun?.some((run) => run.warnings?.length))) {
     const warn = document.createElement('p');
     warn.className = 'warn';
-    warn.textContent = '⚠ 60Hz가 아닌 화면에서 측정한 결과가 있습니다. 프레임 예산과 끊김 기준이 달라 60Hz 결과와 바로 비교할 수 없습니다.';
+    warn.textContent = '⚠ 실행 전 추정이 60Hz가 아니거나 실행 중 프레임 빈도가 불안정한 결과가 있습니다. 실행 전 예산은 고정하며 실행 중 Hz는 진단값입니다.';
     root.appendChild(warn);
   }
   const table = document.createElement('table');
@@ -195,7 +210,9 @@ export function renderResults(root, results) {
   for (const r of results) {
     const row = body.insertRow();
     const hz = r.environment?.refreshHz;
-    const hzText = `${Number.isFinite(hz) ? hz : '?'}Hz${r.environment?.refreshWarning ? ' ⚠' : ''}`;
+    const runHz = r.perRun?.map((run) => run.preRunHz).filter(Number.isFinite);
+    const warning = r.environment?.refreshWarning || r.perRun?.some((run) => run.warnings?.length);
+    const hzText = `${runHz?.length ? runHz.join('/') : Number.isFinite(hz) ? hz : '?'}Hz${warning ? ' ⚠' : ''}`;
     for (const v of [r.scenario, r.engine, r.size.toLocaleString(), hzText, `${r.runs}(+워밍업 ${r.warmupDiscarded})`]) {
       row.insertCell().textContent = v;
     }
