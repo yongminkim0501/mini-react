@@ -363,3 +363,31 @@
 - **관측:** fiber-slice의 50ms 초과 Render 작업 구간은 전 시나리오 0건이고 전체 최댓값은 12ms였다. S2·S4 trace의 Task별 Scripting 최댓값은 15.7/35.8ms로 50ms 초과가 없었다. 브라우저 Rendering+Painting과 동기 Commit 비용 때문에 긴 프레임은 남았다. LoAF의 JS 우세 분류를 긴 JS Task와 동일시하지 않는다.
 - **비용:** S4 진행 바 10.8→22.0fps, S2 입력 p95 152.3→481.1ms, S3 클릭 p95 190.2→379.7ms. 건당 작업 시간은 증가하고 커밋 합침으로 전체 비용은 경우에 따라 감소했다. 단일 레인의 한계와 비용을 그대로 보고한다.
 - **결정:** B-2에서 정지한다. 목표를 맞추려고 앱·데이터·stack을 고치거나 B-3 우선순위를 끼워 넣지 않는다. B-3는 별도 승인 후 진행한다.
+
+### B24 · 2026-11-10 · B-3 승인과 우선순위 범위
+
+- **승인 근거:** 사용자가 B-2를 승인하고 같은 브랜치·worktree에서 B-3와 B-4 설계 보고를 지시했다. 푸시·PR은 하지 않는다.
+- **결정:** Sync=1, Default=2, Transition=4 비트마스크. native Fiber 이벤트 핸들러 범위는 Sync, startTransition 안은 Transition, 그 밖은 Default다. 예외가 나도 이전 범위를 복구한다. stack에는 손대지 않고 fiber-sync/slice는 레인을 무시한다.
+
+### B25 · 2026-11-10 · 큐 재생과 커밋 소유권
+
+- **결정:** Hook의 baseState/baseQueue와 공유 pending 업데이트를 구분한다. 렌더 레인 밖의 action은 보존하고, 첫 skip 이후 이미 적용한 action은 NoLane으로 복제해 순서를 복원한다. Render 중 공유 큐를 소비하지 않고 Commit 성공 때만 소비한다. 대입·함수형·세 레인 혼합 순서와 동일 값 Sync가 나중의 Transition을 덮는 경우를 검증한다.
+
+### B26 · 2026-11-10 · 루트 간 선택과 자기 루트 재시작
+
+- **결정:** fiber 모드는 루트와 무관하게 최고 레인을 먼저 고른다. Sync는 이벤트 이후 microtask에서 배칭해 양보 없이 완료하고 Default/Transition은 5ms 단위다. 같은 우선순위는 FIFO다.
+- **결정:** 자기 루트의 더 높은 레인이 오면 WIP와 미커밋 effect/DOM 작업만 폐기하고 current·큐는 보존한다. 높은 레인 Commit 뒤 최신 current로 낮은 레인을 재시작한다. Default 작업에 Sync가 오는 경우도 이 규칙을 따른다. 다른 루트의 Default는 먼저 실행하되 무관한 Transition WIP까지 버리지 않는다. 그렇지 않으면 진행 바 rAF마다 히트맵이 무한 재시작할 수 있다.
+- **결정:** 같은 레인의 연속 Transition은 현재 스냅샷을 마친 뒤 남은 action으로 다음 렌더를 한다. 타이핑은 새 Sync가 중간 Transition을 폐기한다. 함수형 action을 임의로 버리지 않는다.
+
+### B27 · 2026-11-10 · 지연 분해와 최종 히트맵
+
+- **결정:** 기존 B-2 지표는 유지하고 실제 이벤트 실행 시각과 처리 렌더 시각을 연결한다. 폐기 시 해당 attempt 연결을 무효화한다. fiber 입력/클릭은 Sync 렌더에 연결한다. 구간별 p95는 별도 분위수라 합산해 총 p95로 주장하지 않는다.
+- **결정:** Sync Render 작업과 Commit 작업을 분리한다. 폐기 Transition 비용을 별도로 남기며 allActiveTotalMs에는 커밋 비용과 폐기 비용을 합친다. 마지막 이벤트 발사 직후를 종료 시점으로 잡고, heatmap의 모든 레인이 끝난 Commit 다음 rAF까지를 최종 반영 지연으로 기록한다. 실제 paint 완료 보장은 아니다.
+
+### B28 · 2026-11-10 · 진단만 수행하는 S4 실험
+
+- **결정:** 기존 B-2 S4 trace와 함께 20k progress-only 구간 및 수신 한 건의 invalidation trace를 별도 수집한다. DOM mutation 관찰과 backend node ID 지도는 읽기·계측용이며 앱/CSS는 변경하지 않는다. 문서 Layout root나 totalObjects만으로 히트맵 전체가 다시 계산됐다고 단정하지 않고 dirtyObjects·Paint 대상·invalidation 근거를 구분한다.
+
+### B29 · 2026-11-10 · B-4는 설계만
+
+- **결정:** bailout은 B-3에 넣지 않는다. 현재 h가 props를 복사하고 자식 함수를 투명 확장하는 구조에서 참조 기반 bailout이 성립하는 조건과 앱 최소 변경안을 별도 보고한다. 실제 React memo의 prop별 비교와 이번 엄격한 props 참조 비교는 구분한다. B-4 구현은 별도 승인 전 진행하지 않는다.

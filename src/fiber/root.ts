@@ -3,6 +3,7 @@ import { commitRoot } from './commit';
 import { performUnitOfWork, prepareRoot } from './workLoop';
 import type { EngineEvent, FiberNode, PassiveEffect, RenderHost } from './types';
 import type { SliceScheduler } from './scheduler';
+import { AllLanes, DefaultLane, highestLane, SyncLane } from './lanes';
 
 export class FiberRoot implements RenderHost {
   current: FiberNode | null = null;
@@ -25,6 +26,8 @@ export class FiberRoot implements RenderHost {
   private activeMs = 0;
   private lastError: unknown = null;
   private idleWaiters: { resolve(): void; reject(error: unknown): void }[] = [];
+  private pendingLanes = 0;
+  renderLane = AllLanes;
 
   constructor(
     readonly component: (props: any) => Child,
@@ -33,6 +36,7 @@ export class FiberRoot implements RenderHost {
     readonly props: object,
     private readonly emit: (event: EngineEvent) => void,
     private readonly scheduler?: SliceScheduler,
+    readonly laneAware = false,
   ) {}
 
   mount() {
@@ -44,8 +48,11 @@ export class FiberRoot implements RenderHost {
     else this.update();
   }
 
-  schedule() {
-    if (this.scheduled) return true;
+  schedule(lane = DefaultLane) {
+    if (this.scheduled) {
+      if (this.laneAware) { this.pendingLanes |= lane; this.scheduler!.enqueue(this); }
+      return true;
+    }
     if (this.flushingPassive) {
       if (this.passiveChain >= 100) {
         console.error('Fiber effect의 연속 업데이트가 100회를 넘어 중단했습니다');
@@ -54,6 +61,7 @@ export class FiberRoot implements RenderHost {
       this.passiveChain++;
     } else this.passiveChain = 0;
     this.scheduled = true;
+    if (this.laneAware) this.pendingLanes |= lane;
     if (this.scheduler) {
       this.scheduler.enqueue(this);
       return true;
@@ -73,11 +81,21 @@ export class FiberRoot implements RenderHost {
     this.runSlice(() => false);
   }
 
+  getPriority() { return this.laneAware ? highestLane(this.pendingLanes) || this.renderLane : DefaultLane; }
+
   runSlice(shouldYield: () => boolean): boolean {
     if (!this.alive) return false;
     const event = (type: EngineEvent['type'], extra = {}) => this.emit({
-      type, root: this, label: this.label, t: performance.now(), attemptId: this.attempt, ...extra,
+      type, root: this, label: this.label, t: performance.now(), attemptId: this.attempt,
+      lane: this.laneAware ? this.renderLane : undefined, ...extra,
     });
+    if (this.laneAware && this.nextUnit && highestLane(this.pendingLanes) < this.renderLane) {
+      event('renderAbort', { activeMs: this.activeMs });
+      this.nextUnit = null;
+      this.workInProgress = null;
+      this.effects = [];
+      this.placements = this.updates = this.deletions = [];
+    }
     const mounted = this.current === null;
     const sliceStart = performance.now();
     this.rendering = true;
@@ -86,13 +104,14 @@ export class FiberRoot implements RenderHost {
         this.scheduled = false;
         this.lastError = null;
         this.attempt++;
+        this.renderLane = this.laneAware ? highestLane(this.pendingLanes) || DefaultLane : AllLanes;
         this.activeMs = 0;
         event('renderStart');
         this.nextUnit = prepareRoot(this, this.container);
       }
       // At least one unit even if a host task was delayed. A unit itself cannot be preempted.
       do { this.nextUnit = performUnitOfWork(this, this.nextUnit); }
-      while (this.nextUnit && !shouldYield());
+      while (this.nextUnit && (this.laneAware && this.renderLane === SyncLane || !shouldYield()));
     } catch (error) {
       this.lastError = error;
       this.nextUnit = null;
@@ -116,6 +135,7 @@ export class FiberRoot implements RenderHost {
     // Commit errors propagate: DOM writes are not rollback-safe. Never report success.
     const patchCount = this.placements.length + this.deletions.length + this.updates.length;
     const commitStart = performance.now();
+    const renderActiveMs = this.activeMs;
     try {
       if (mounted) this.container.replaceChildren();
       commitRoot(this);
@@ -126,7 +146,15 @@ export class FiberRoot implements RenderHost {
       throw error;
     }
     this.activeMs += performance.now() - commitStart;
-    event('commit', { mounted, patchCount, activeMs: this.activeMs });
+    if (this.laneAware) {
+      this.pendingLanes = 0;
+      for (const hook of this.current!.hooks) {
+        if (hook.kind !== 'state') continue;
+        for (const update of [...hook.baseQueue, ...hook.queue.updates]) this.pendingLanes |= update.lane;
+      }
+      this.scheduled = this.pendingLanes !== 0;
+    }
+    event('commit', { mounted, patchCount, activeMs: this.activeMs, renderActiveMs, idle: !this.scheduled });
     this.passive.push(...this.effects);
     this.effects = [];
     this.queuePassive();
@@ -189,6 +217,7 @@ export class FiberRoot implements RenderHost {
     this.alive = false;
     this.epoch++;
     this.scheduled = false;
+    this.pendingLanes = 0;
     this.nextUnit = null;
     this.lastError = null;
     this.settleIdle();
