@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" xmlns:c2pa="http://c2pa.org/manifest">
+  <title>mini-react Fiber 엔진 아키텍처</title>
+  <desc>업데이트가 레인으로 우선순위를 받고, Scheduler가 5ms씩 양보하며 Render 단계를 끊어서 진행한다. Render는 work-in-progress 트리만 만들고, Commit 단계에서 한 번에 DOM에 반영한 뒤 current를 교체한다.</desc>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9z" fill="#8B95A1"/>
+    </marker>
+    <marker id="arb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9z" fill="#3182F6"/>
+    </marker>
+    <style>
+      .h{font-size:26px;font-weight:800;fill:#191F28}
+      .sub{font-size:16px;font-weight:500;fill:#8B95A1}
+      .ct{font-size:19px;font-weight:700;fill:#191F28}
+      .cc{font-size:14px;font-weight:500;fill:#6B7684}
+      .card{fill:#F9FAFB;stroke:#E5E8EB;stroke-width:1.5}
+      .ln{stroke:#B0B8C1;stroke-width:2;fill:none}
+      .ph{font-size:17px;font-weight:800;fill:#1B64DA}
+      .pc{font-size:13px;font-weight:500;fill:#4E5968}
+      .st{font-size:15px;font-weight:700;fill:#333D4B}
+    </style>
+  </defs>
+  <g font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Noto Sans CJK KR', 'Malgun Gothic', sans-serif">
+  <rect x="1" y="1" width="1198" height="698" rx="24" fill="#FFFFFF" stroke="#E5E8EB" stroke-width="2"/>
+  <text class="h" x="48" y="66">Fiber 엔진</text>
+  <text class="sub" x="48" y="94">우선순위를 매기고, 끊어서 계산하고, 한 번에 반영한다</text>
+
+  <rect class="card" x="48" y="130" width="300" height="130" rx="18"/>
+  <text class="ct" x="70" y="164">업데이트</text>
+  <rect x="70" y="180" width="256" height="30" rx="10" fill="#3182F6"/>
+  <text x="198" y="200" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">입력, 클릭 → Sync (급함)</text>
+  <rect x="70" y="218" width="256" height="30" rx="10" fill="#E8F3FF"/>
+  <text x="198" y="238" text-anchor="middle" font-size="14" font-weight="700" fill="#1B64DA">startTransition → Transition</text>
+
+  <rect class="card" x="398" y="130" width="300" height="130" rx="18"/>
+  <text class="ct" x="420" y="164">Lanes, updateQueue</text>
+  <text class="cc" x="420" y="194">업데이트를 큐에 쌓고</text>
+  <text class="cc" x="420" y="216">우선순위를 비트로 표시</text>
+
+  <rect class="card" x="748" y="130" width="404" height="130" rx="18"/>
+  <text class="ct" x="770" y="164">Scheduler</text>
+  <text class="cc" x="770" y="194">5ms마다 메인 스레드를 브라우저에 양보</text>
+  <text class="cc" x="770" y="216">급한 레인이 오면 하던 렌더를 버리고 재시작</text>
+
+  <line class="ln" x1="348" y1="195" x2="392" y2="195" marker-end="url(#ar)"/>
+  <line class="ln" x1="698" y1="195" x2="742" y2="195" marker-end="url(#ar)"/>
+  <line class="ln" x1="780" y1="260" x2="780" y2="294" marker-end="url(#ar)"/>
+
+  <rect x="48" y="300" width="752" height="360" rx="22" fill="#F5F9FF" stroke="#C9DFFF" stroke-width="1.5"/>
+  <text class="ct" x="72" y="338" font-size="21">Render 단계</text>
+  <rect x="198" y="318" width="112" height="28" rx="14" fill="#3182F6"/>
+  <text x="254" y="337" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">끊을 수 있음</text>
+  <text class="cc" x="72" y="368">work-in-progress 트리만 만들고, 화면에 붙은 DOM은 건드리지 않는다</text>
+
+  <g>
+    <rect x="72" y="390" width="150" height="62" rx="14" fill="#FFFFFF" stroke="#C9DFFF"/>
+    <text class="ph" x="147" y="416" text-anchor="middle">begin</text>
+    <text class="pc" x="147" y="438" text-anchor="middle">DOM 준비, props 비교</text>
+    <rect x="252" y="390" width="150" height="62" rx="14" fill="#FFFFFF" stroke="#C9DFFF"/>
+    <text class="ph" x="327" y="416" text-anchor="middle">expand</text>
+    <text class="pc" x="327" y="438" text-anchor="middle">컴포넌트 펼치기</text>
+    <rect x="432" y="390" width="150" height="62" rx="14" fill="#FFFFFF" stroke="#C9DFFF"/>
+    <text class="ph" x="507" y="416" text-anchor="middle">children</text>
+    <text class="pc" x="507" y="438" text-anchor="middle">자식 fiber 하나 생성</text>
+    <rect x="612" y="390" width="150" height="62" rx="14" fill="#FFFFFF" stroke="#C9DFFF"/>
+    <text class="ph" x="687" y="416" text-anchor="middle">complete</text>
+    <text class="pc" x="687" y="438" text-anchor="middle">화면 밖에서 조립</text>
+  </g>
+  <line x1="222" y1="421" x2="246" y2="421" stroke="#3182F6" stroke-width="2" marker-end="url(#arb)"/>
+  <line x1="402" y1="421" x2="426" y2="421" stroke="#3182F6" stroke-width="2" marker-end="url(#arb)"/>
+  <line x1="582" y1="421" x2="606" y2="421" stroke="#3182F6" stroke-width="2" marker-end="url(#arb)"/>
+  <text class="cc" x="72" y="482" font-size="13">performUnitOfWork 한 번 = 한 칸. 칸 사이 어디서든 멈췄다가 이어갈 수 있다</text>
+
+  <text x="215" y="518" text-anchor="middle" font-size="14" font-weight="700" fill="#6B7684">current</text>
+  <text x="215" y="536" text-anchor="middle" font-size="12" font-weight="500" fill="#8B95A1">지금 화면과 같은 트리</text>
+  <g stroke="#C5CCD3" stroke-width="2"><line x1="215" y1="562" x2="170" y2="606"/><line x1="215" y1="562" x2="260" y2="606"/><line x1="170" y1="606" x2="145" y2="640"/><line x1="170" y1="606" x2="195" y2="640"/></g>
+  <g fill="#B0B8C1"><circle cx="215" cy="562" r="12"/><circle cx="170" cy="606" r="11"/><circle cx="260" cy="606" r="11"/><circle cx="145" cy="640" r="9"/><circle cx="195" cy="640" r="9"/></g>
+
+  <text x="585" y="518" text-anchor="middle" font-size="14" font-weight="700" fill="#1B64DA">work-in-progress</text>
+  <text x="585" y="536" text-anchor="middle" font-size="12" font-weight="500" fill="#8B95A1">계산 중인 새 트리</text>
+  <g stroke="#9CC3FA" stroke-width="2"><line x1="585" y1="562" x2="540" y2="606"/><line x1="585" y1="562" x2="630" y2="606"/><line x1="540" y1="606" x2="515" y2="640"/></g>
+  <line x1="540" y1="606" x2="565" y2="640" stroke="#9CC3FA" stroke-width="2" stroke-dasharray="4 4"/>
+  <g fill="#3182F6"><circle cx="585" cy="562" r="12"/><circle cx="540" cy="606" r="11"/><circle cx="630" cy="606" r="11"/><circle cx="515" cy="640" r="9"/></g>
+  <circle cx="565" cy="640" r="9" fill="#FFFFFF" stroke="#3182F6" stroke-width="2" stroke-dasharray="3 3"/>
+
+  <line x1="229" y1="562" x2="571" y2="562" stroke="#8B95A1" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <rect x="345" y="548" width="110" height="28" rx="14" fill="#FFFFFF" stroke="#D1D6DB"/>
+  <text x="400" y="567" text-anchor="middle" font-size="13" font-weight="700" fill="#4E5968">alternate</text>
+
+  <line class="ln" x1="800" y1="480" x2="834" y2="480" marker-end="url(#ar)"/>
+
+  <rect x="840" y="300" width="312" height="360" rx="22" fill="#F9FAFB" stroke="#E5E8EB" stroke-width="1.5"/>
+  <text class="ct" x="864" y="338" font-size="21">Commit 단계</text>
+  <rect x="996" y="318" width="84" height="28" rx="14" fill="#333D4B"/>
+  <text x="1038" y="337" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">한 번에</text>
+  <text class="cc" x="864" y="368">멈추지 않고 끝까지 실행</text>
+
+  <rect x="864" y="390" width="264" height="48" rx="12" fill="#FFFFFF" stroke="#E5E8EB"/>
+  <text class="st" x="996" y="412" text-anchor="middle">모아둔 변경 목록</text>
+  <text x="996" y="430" text-anchor="middle" font-size="12" font-weight="500" fill="#8B95A1">placements, updates, deletions</text>
+  <rect x="864" y="460" width="264" height="44" rx="12" fill="#FFFFFF" stroke="#E5E8EB"/>
+  <text class="st" x="996" y="487" text-anchor="middle">실제 DOM에 반영</text>
+  <rect x="864" y="526" width="264" height="44" rx="12" fill="#FFFFFF" stroke="#E5E8EB"/>
+  <text class="st" x="996" y="553" text-anchor="middle">current를 새 트리로 교체</text>
+  <rect x="864" y="592" width="264" height="44" rx="12" fill="#E8F3FF"/>
+  <text x="996" y="619" text-anchor="middle" font-size="15" font-weight="700" fill="#1B64DA">useEffect 실행</text>
+  <g stroke="#B0B8C1" stroke-width="2">
+    <line x1="996" y1="438" x2="996" y2="454" marker-end="url(#ar)"/>
+    <line x1="996" y1="504" x2="996" y2="520" marker-end="url(#ar)"/>
+    <line x1="996" y1="570" x2="996" y2="586" marker-end="url(#ar)"/>
+  </g>
+  </g>
+<metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYToyZjU0ZmM5NS0yOTE4LTRkYzgtODYyOS1kZTNiOGY5ZmM2MWMAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaFp6tZrrVHFskVMnmRyXWz8AAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDo1MWVlODhiNC1hMWM2LTQ3MjktODI4Yy0xNTM3MjFjZDkxNDNscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNo7uEEzUVX+GXow57pcVib2gAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggGlxJ5p1h7PBl/qNQJsGZySJrMZdeaLEa8qbBBD7sw5GkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaOm0ZsXxHgW4oS1XRVu8ouIAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIFYUbC8WKzNb7pFU06ULwc9jfNO98rz3Wk+YIK6zF0nyZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GSFQZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjJmNTRmYzk1LTI5MTgtNGRjOC04NjI5LWRlM2I4ZjlmYzYxYy9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjM4N2Q4MmZjLWI0MWMtNDU0NS04Njk1LTllNWVjNmJiYmYwYnJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCAaXEnmnWHs8GX+o1AmwZnJImsxl15osRrypsEEPuzDkaJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggeb68i/GrKbgCTTGrqUqJiYBcjPaQGR1nOnwXAlrmEZGiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggxhD2ug1aPoB33TELmEvcw8wxT+goR2ulTQVzODQZpgt0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQHasXJrqGrLyQCvPb6ugR2fbf2Y76StDneKFn/GSQbc1D7T4txb48Qt/Z+4rLsgvOKXBmZhlo0EBbMadT3dWmwA=</c2pa:manifest></metadata></svg>
