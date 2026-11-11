@@ -1,22 +1,23 @@
 /** Measurement only, built-in Node/CDP. No application/engine commands are mutated.
  * node lab/dev/measure-b4-diagnostics.mjs <output-dir> <attempt|production|smoke>
  */
+import {gzipSync} from 'node:zlib';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 const output=process.argv[2],phase=process.argv[3];
-if(!output||!['attempt','production','smoke'].includes(phase))throw Error('Expected output-dir and attempt|production|smoke');
+if(!output||!['attempt','production','smoke','clean','trace'].includes(phase))throw Error('Expected output-dir and attempt|production|smoke');
 await mkdir(output,{recursive:true});
 const provenance={commit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty:execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),phase,headed:true,cpuThrottle:1};
 const pages=()=>fetch('http://127.0.0.1:9331/json/list').then(r=>r.json());
 async function connect(page) {
  const ws=new WebSocket(page.webSocketDebuggerUrl);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});
- let seq=0;const pending=new Map();
- ws.onmessage=({data})=>{const m=JSON.parse(data);if(m.id){const p=pending.get(m.id);pending.delete(m.id);m.error?p?.reject(Error(JSON.stringify(m.error))):p?.resolve(m.result);}};
+ let seq=0;const pending=new Map(),watchers=new Map();
+ ws.onmessage=({data})=>{const m=JSON.parse(data);if(m.id){const p=pending.get(m.id);pending.delete(m.id);m.error?p?.reject(Error(JSON.stringify(m.error))):p?.resolve(m.result);}else{for(const fn of watchers.get(m.method)??[])fn(m.params);}};
  const send=(method,params={})=>new Promise((resolve,reject)=>{pending.set(++seq,{resolve,reject});ws.send(JSON.stringify({id:seq,method,params}));});
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
  await send('Page.enable');await send('Emulation.setDeviceMetricsOverride',{width:1280,height:720,deviceScaleFactor:2,mobile:false});
  await send('Emulation.setCPUThrottlingRate',{rate:1});
- return {send,evaluate,close:()=>ws.close()};
+ return {send,evaluate,once:method=>new Promise(resolve=>watchers.set(method,[resolve])),close:()=>ws.close()};
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const first=(await pages()).find(p=>p.type==='page');if(!first)throw Error('No Chrome page');
@@ -33,19 +34,33 @@ async function page(port) {
 const rows=[];
 async function run(c,scenario,engine,appVariant,runIndex,counters) {
  await c.send('Page.bringToFront');await wait(100);
- if(phase==='attempt')await c.evaluate('__b4AttemptProbe.clear()');
+ if(phase==='attempt'||phase==='trace')await c.evaluate('__b4AttemptProbe.clear()');
  console.log(JSON.stringify({phase,scenario,engine,appVariant,run:runIndex,counters,at:new Date().toISOString()}));
  const record=await c.evaluate(`__lab.measureRun(${JSON.stringify(scenario)},${JSON.stringify(engine)},${JSON.stringify(appVariant)},${runIndex})`);
- if(phase==='attempt')record.trace=await c.evaluate('({events:__b4AttemptProbe.events,calls:__b4AttemptProbe.calls})');
+ if(phase==='attempt'||phase==='trace')record.trace=await c.evaluate('({events:__b4AttemptProbe.events,calls:__b4AttemptProbe.calls})');
  record.counters=counters;record.runIndex=runIndex;
  if(runIndex>=0){rows.push(record);await writeFile(`${output}/${phase}.json`,JSON.stringify({provenance,rows},null,2));}
  await c.evaluate('__lab.suspend()');return record;
 }
 try {
- if(phase==='attempt'){
+ if(phase==='clean'){
+  for(const p of await pages())if(p.type==='page'&&/^http:\/\/127\.0\.0\.1:518[23]\//.test(p.url))await master.send('Target.closeTarget',{targetId:p.id});
+ }else if(phase==='attempt'||phase==='trace'){
   const c=await page(5181);await c.evaluate("import('/lab/dev/final-attempt-probe.js')");
   for(const engine of ['fiber','fiber-bailout'])await run(c,'S2',engine,'cached',-1,'on');
-  for(let i=0;i<3;i++)for(const engine of ['fiber','fiber-bailout'])await run(c,'S2',engine,'cached',i,'on');
+  if(phase==='attempt')for(let i=0;i<3;i++)for(const engine of ['fiber','fiber-bailout'])await run(c,'S2',engine,'cached',i,'on');
+  else for(const engine of ['fiber','fiber-bailout']) {
+    await c.send('Tracing.start',{categories:'devtools.timeline,blink.user_timing',transferMode:'ReturnAsStream'});
+    const marker=`B4D-anchor-${engine}`;
+    const markMs=await c.evaluate(`performance.mark(${JSON.stringify(marker)}).startTime`);
+    const r=await run(c,'S2',engine,'cached',0,'on');
+    const done=c.once('Tracing.tracingComplete');await c.send('Tracing.end');const {stream}=await done;
+    let raw='';for(;;){const part=await c.send('IO.read',{handle:stream});raw+=part.base64Encoded?Buffer.from(part.data,'base64').toString():part.data;if(part.eof)break;}
+    await c.send('IO.close',{handle:stream});
+    const filename=`final-attempt-${engine}.trace.json.gz`;await writeFile(`${output}/${filename}`,gzipSync(raw));
+    Object.assign(r,{traceFilename:filename,clockMarker:marker,clockMarkMs:markMs});
+    await writeFile(`${output}/trace.json`,JSON.stringify({provenance,rows},null,2));
+  }
  }else{
   const on=await page(5182),off=await page(5183);
   if(phase==='smoke'){
