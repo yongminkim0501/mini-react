@@ -1,0 +1,75 @@
+{
+  "definition": "Marker-bounded main-thread exclusive union. Painting > Rendering > Scripting; remaining time OtherOrIdle. Not DevTools UI Summary.",
+  "categories": {
+    "Scripting": [
+      "FunctionCall",
+      "EvaluateScript",
+      "EvaluateModule",
+      "EventDispatch",
+      "RunMicrotasks",
+      "V8.Execute",
+      "TimerFire",
+      "FireAnimationFrame"
+    ],
+    "Rendering": [
+      "UpdateLayoutTree",
+      "RecalculateStyles",
+      "Layout",
+      "PrePaint",
+      "Layerize",
+      "UpdateLayerTree"
+    ],
+    "Painting": [
+      "Paint",
+      "PaintImage",
+      "CompositeLayers",
+      "Commit"
+    ]
+  },
+  "rows": [
+    {
+      "mode": "stack",
+      "durationMs": 218.409,
+      "categories": {
+        "Scripting": {
+          "ms": 97.292,
+          "percent": 44.54578336973293
+        },
+        "Rendering": {
+          "ms": 65.825,
+          "percent": 30.138410047205017
+        },
+        "Painting": {
+          "ms": 51.132,
+          "percent": 23.411123168001318
+        },
+        "OtherOrIdle": {
+          "ms": 4.16,
+          "percent": 1.9046834150607348
+        }
+      }
+    },
+    {
+      "mode": "fiber-sync",
+      "durationMs": 201.313,
+      "categories": {
+        "Scripting": {
+          "ms": 77.698,
+          "percent": 38.59561975629989
+        },
+        "Rendering": {
+          "ms": 68.459,
+          "percent": 34.006248975476
+        },
+        "Painting": {
+          "ms": 51.609,
+          "percent": 25.636198357781165
+        },
+        "OtherOrIdle": {
+          "ms": 3.547,
+          "percent": 1.761932910442942
+        }
+      }
+    }
+  ]
+}

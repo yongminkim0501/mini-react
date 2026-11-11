@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>배포 지연 추적 · mini-react lab</title>
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="../../">← Phase 1 검증 페이지</a>
+      <span>엔진 <b id="engine-name">-</b> · <span id="param-summary"></span></span>
+    </nav>
+
+    <header class="page-head">
+      <h1>배포 지연 추적</h1>
+      <p>서버 × 최근 100분 p95 지연. 배포 직후 지연 상승과 원인 후보(배포 버전, 에러 코드)가 시간·서버 축에서 겹치는지 확인한다.</p>
+    </header>
+
+    <!-- 엔진이 그리는 영역 -->
+    <div class="live-row">
+      <span class="live-label">실시간 수신 표시</span>
+      <div id="progress-root" class="progress-root"></div>
+    </div>
+    <div id="app-root"></div>
+
+    <!-- 엔진 밖 (Vanilla DOM): 측정 패널 -->
+    <section class="lab-panel" aria-label="측정">
+      <h2>측정</h2>
+      <div class="lab-controls">
+        <select id="scenario-select"></select>
+        <label>반복 <input id="runs-input" type="number" min="1" max="20" /></label>
+        <button id="run-button" type="button">실행</button>
+        <button id="download-button" type="button">JSON 내려받기</button>
+        <span id="run-status">대기</span>
+      </div>
+      <div id="results"></div>
+    </section>
+    <pre id="fatal" class="fatal" hidden></pre>
+
+    <script type="module" src="../main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,406 @@
+{
+  "stage": "phase1-complete",
+  "asOf": "2026-11-11",
+  "size": 20000,
+  "seed": 42,
+  "cellCost": 0,
+  "runs": 3,
+  "warmupDiscarded": 1,
+  "aggregation": {
+    "means": "mean of three per-run means",
+    "p95": "mean of three per-run p95 values, not pooled",
+    "longTaskMax": "maximum across all three runs"
+  },
+  "sources": {
+    "A": {
+      "path": "docs/results/fiber-slice-b2/fiber-slice-cross.json",
+      "build": "development",
+      "counters": "B4 counters not introduced",
+      "commit": "485435c2d5824feab0a5f59adad2bc5146f1590a"
+    },
+    "B": {
+      "path": "docs/results/fiber-b4-diagnostics/production.json.gz",
+      "build": "production",
+      "counters": "off",
+      "commit": "42b0d9657f9fbf55a6ab7baddce7d71ffb6d7800"
+    },
+    "C": {
+      "path": "docs/results/fiber-bailout-b4/fiber-bailout-cross.json",
+      "build": "development",
+      "counters": "on",
+      "commit": "9b3084e7ab2f561760c8f19100ec651ca9139f34"
+    }
+  },
+  "stages": [
+    {
+      "engine": "stack",
+      "app": "current",
+      "scenarios": {
+        "S1": {
+          "source": "A",
+          "workMs": 107.24444443649716,
+          "elapsedMs": 107.24444443649716,
+          "longTaskMaxMs": 122,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 55.40984752479078,
+          "commits": 3,
+          "receivedUpdates": 3,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S2": {
+          "source": "A",
+          "workMs": 66.16140350333431,
+          "elapsedMs": 66.16140350333431,
+          "longTaskMaxMs": 89,
+          "inputP95Ms": 152.320000008742,
+          "clickP95Ms": null,
+          "progressFps": 30.305813015389862,
+          "commits": 19,
+          "receivedUpdates": 0,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S3": {
+          "source": "A",
+          "workMs": 66.69696968974489,
+          "elapsedMs": 66.69696968974489,
+          "longTaskMaxMs": 182,
+          "inputP95Ms": null,
+          "clickP95Ms": 190.17666666309026,
+          "progressFps": 43.67054022985698,
+          "commits": 11,
+          "receivedUpdates": 1,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S4": {
+          "source": "A",
+          "workMs": 105.77023810006324,
+          "elapsedMs": 105.77023810006324,
+          "longTaskMaxMs": 191,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 10.74716963925045,
+          "commits": 28,
+          "receivedUpdates": 28,
+          "warningRuns": 2,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        }
+      }
+    },
+    {
+      "engine": "fiber-sync",
+      "app": "current",
+      "scenarios": {
+        "S1": {
+          "source": "A",
+          "workMs": 96.35555557409923,
+          "elapsedMs": 96.36666667461395,
+          "longTaskMaxMs": 111,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 55.04909508798877,
+          "commits": 3,
+          "receivedUpdates": 3,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S2": {
+          "source": "A",
+          "workMs": 61.84210526734068,
+          "elapsedMs": 61.85087719716524,
+          "longTaskMaxMs": 87,
+          "inputP95Ms": 138.38666671514508,
+          "clickP95Ms": null,
+          "progressFps": 32.66080883353846,
+          "commits": 19,
+          "receivedUpdates": 0,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S3": {
+          "source": "A",
+          "workMs": 61.74848484992981,
+          "elapsedMs": 61.74848484992981,
+          "longTaskMaxMs": 164,
+          "inputP95Ms": null,
+          "clickP95Ms": 170.5400000353653,
+          "progressFps": 44.30791502413252,
+          "commits": 11,
+          "receivedUpdates": 1,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S4": {
+          "source": "A",
+          "workMs": 94.1860536445603,
+          "elapsedMs": 94.19386973837783,
+          "longTaskMaxMs": 170,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 11.18389736040456,
+          "commits": 29.666666666666668,
+          "receivedUpdates": 29.666666666666668,
+          "warningRuns": 2,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        }
+      }
+    },
+    {
+      "engine": "fiber-slice",
+      "app": "current",
+      "scenarios": {
+        "S1": {
+          "source": "A",
+          "workMs": 123.42222219043308,
+          "elapsedMs": 180.27777775128683,
+          "longTaskMaxMs": 71,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 55.52486006017857,
+          "commits": 3,
+          "receivedUpdates": 3,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S2": {
+          "source": "A",
+          "workMs": 92.07407406524376,
+          "elapsedMs": 197.79629629188113,
+          "longTaskMaxMs": 88,
+          "inputP95Ms": 481.07666666507714,
+          "clickP95Ms": null,
+          "progressFps": 36.38297810101814,
+          "commits": 9,
+          "receivedUpdates": 0,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S3": {
+          "source": "A",
+          "workMs": 89.26666667605892,
+          "elapsedMs": 154.7363636313063,
+          "longTaskMaxMs": 71,
+          "inputP95Ms": null,
+          "clickP95Ms": 379.6633333007494,
+          "progressFps": 39.36354494318799,
+          "commits": 11,
+          "receivedUpdates": 1,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S4": {
+          "source": "A",
+          "workMs": 120.70158729155858,
+          "elapsedMs": 186.9409523836204,
+          "longTaskMaxMs": 85,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 21.95227215371366,
+          "commits": 20.333333333333332,
+          "receivedUpdates": 207.66666666666666,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        }
+      }
+    },
+    {
+      "engine": "fiber",
+      "app": "current",
+      "scenarios": {
+        "S1": {
+          "source": "B",
+          "workMs": 135.44444443119897,
+          "elapsedMs": 355.83333333333337,
+          "longTaskMaxMs": 73,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 57.121152461442314,
+          "commits": 3,
+          "receivedUpdates": 3,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S2": {
+          "source": "B",
+          "workMs": 63.37499998609225,
+          "elapsedMs": 74.86999999483426,
+          "longTaskMaxMs": 74,
+          "inputP95Ms": 90.95000003178914,
+          "clickP95Ms": null,
+          "progressFps": 33.2614608432978,
+          "commits": 20,
+          "receivedUpdates": 0,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S3": {
+          "source": "B",
+          "workMs": 67.1818181962678,
+          "elapsedMs": 80.86363636724876,
+          "longTaskMaxMs": 72,
+          "inputP95Ms": null,
+          "clickP95Ms": 87.66666667461395,
+          "progressFps": 44.99574565318049,
+          "commits": 11,
+          "receivedUpdates": 1,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S4": {
+          "source": "C",
+          "workMs": 144.58694748588823,
+          "elapsedMs": 319.82048838263756,
+          "longTaskMaxMs": 79,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 34.1284177828966,
+          "commits": 14,
+          "receivedUpdates": 196,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        }
+      }
+    },
+    {
+      "engine": "fiber-bailout",
+      "app": "cached",
+      "scenarios": {
+        "S1": {
+          "source": "B",
+          "workMs": 136.29999996556177,
+          "elapsedMs": 381.64444442590076,
+          "longTaskMaxMs": 79,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 57.01462891693827,
+          "commits": 3,
+          "receivedUpdates": 3,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S2": {
+          "source": "B",
+          "workMs": 5.688333324591318,
+          "elapsedMs": 16.95333333015442,
+          "longTaskMaxMs": 68,
+          "inputP95Ms": 28.183333293596895,
+          "clickP95Ms": null,
+          "progressFps": 55.899511879126315,
+          "commits": 20,
+          "receivedUpdates": 0,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S3": {
+          "source": "B",
+          "workMs": 72.2666666616093,
+          "elapsedMs": 93.25151513923298,
+          "longTaskMaxMs": 77,
+          "inputP95Ms": null,
+          "clickP95Ms": 90.52666668097177,
+          "progressFps": 42.69439873515619,
+          "commits": 11,
+          "receivedUpdates": 1,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        },
+        "S4": {
+          "source": "C",
+          "workMs": 159.02649571829372,
+          "elapsedMs": 361.2818376055131,
+          "longTaskMaxMs": 77,
+          "inputP95Ms": null,
+          "clickP95Ms": null,
+          "progressFps": 35.646652592609854,
+          "commits": 12.666666666666666,
+          "receivedUpdates": 203.33333333333334,
+          "warningRuns": 0,
+          "preRunHz": [
+            60,
+            60,
+            60
+          ]
+        }
+      }
+    }
+  ]
+}

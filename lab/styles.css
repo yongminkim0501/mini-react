@@ -1,0 +1,76 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 14px/1.4 system-ui, -apple-system, sans-serif;
+  color: #1d2330;
+  background: #f6f7f9;
+}
+body.has-hud { padding-top: 104px; }
+
+.nav { display: flex; justify-content: space-between; padding: 8px 16px; background: #fff; border-bottom: 1px solid #e3e6eb; }
+
+.page-head { padding: 8px 16px 0; }
+.page-head h1 { margin: 0; font-size: 18px; }
+.page-head p { margin: 2px 0 0; color: #6b7385; font-size: 13px; }
+
+/* 실시간 수신 표시 (두 번째 루트) */
+.live-row { display: flex; gap: 8px; align-items: center; padding: 8px 16px 0; }
+.live-label { flex: none; font-size: 12px; color: #6b7385; }
+.progress-root { flex: 1; min-width: 0; }
+.progress { position: relative; height: 10px; background: #e3e6eb; border-radius: 5px; overflow: hidden; }
+.progress-thumb { position: absolute; top: 0; width: 60px; height: 100%; margin-left: -30px; background: #3d6ff2; border-radius: 5px; }
+
+/* 앱 */
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 260px; grid-template-areas: 'toolbar toolbar' 'map side'; gap: 12px; padding: 12px 16px; }
+.toolbar { grid-area: toolbar; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.side { grid-area: side; display: flex; flex-direction: column; gap: 12px; }
+.search { display: flex; gap: 8px; align-items: center; }
+.search input { width: 220px; padding: 6px 8px; font: inherit; }
+.echo-label { color: #6b7385; font-size: 12px; }
+.echo { min-width: 160px; font-family: ui-monospace, monospace; }
+.controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.control { display: flex; flex-direction: column; font-size: 12px; }
+.stats { display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; margin: 0; padding: 8px; background: #fff; border: 1px solid #e3e6eb; }
+.stats dt { color: #6b7385; }
+.stats dd { margin: 0; font-variant-numeric: tabular-nums; }
+.detail { padding: 8px; min-height: 60px; background: #fff; border: 1px solid #e3e6eb; }
+.detail-list { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; margin: 6px 0 0; font-size: 13px; }
+.detail-list dt { color: #6b7385; }
+.detail-list dd { margin: 0; font-family: ui-monospace, monospace; }
+.warn { margin: 0 0 8px; color: #8a5300; }
+.click-count { margin: 0; color: #6b7385; }
+
+/* 히트맵: CSS grid + div 셀 */
+.heatmap { grid-area: map; overflow: auto; max-height: 70vh; background: #fff; border: 1px solid #e3e6eb; }
+.row { display: grid; grid-template-columns: 72px repeat(var(--cols, 100), 8px); gap: 1px; margin-bottom: 1px; }
+.heatmap { --cols: 100; }
+.row-label { font-size: 10px; line-height: 8px; color: #6b7385; white-space: nowrap; overflow: hidden; }
+.cell { width: 8px; height: 8px; cursor: pointer; }
+.cell.low { opacity: 0.25; }
+.cell.dim { opacity: 0.12; }
+.cell.hit { outline: 1px solid #111; opacity: 1; }
+.cell.sel { outline: 2px solid #3d6ff2; outline-offset: 0; position: relative; z-index: 1; }
+
+/* 측정 패널 (엔진 밖) */
+.lab-panel { margin: 12px 16px; padding: 12px; background: #fff; border: 1px solid #e3e6eb; }
+.lab-panel h2 { margin: 0 0 8px; font-size: 16px; }
+.lab-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.lab-controls input { width: 56px; }
+#results { overflow-x: auto; }
+.results { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.results th, .results td { border: 1px solid #e3e6eb; padding: 4px 6px; text-align: right; white-space: nowrap; }
+.results th { background: #f0f2f5; }
+.fatal { margin: 12px 16px; padding: 12px; color: #b00020; background: #fff0f0; border: 1px solid #f5c2c7; white-space: pre-wrap; }
+
+/* 녹화용 HUD: 1280×720에서 한 줄에 들어가게 한다. */
+.hud { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; gap: 16px; align-items: center; height: 96px; padding: 8px 16px; color: #fff; background: rgba(15, 18, 26, 0.94); overflow: hidden; }
+.hud-title { display: flex; flex-direction: column; flex: 0 1 260px; min-width: 0; }
+.hud-engine { font-size: 24px; font-weight: 700; line-height: 1.1; }
+.hud-scenario { font-size: 17px; font-weight: 600; color: #ffb300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-hz { font-size: 12px; color: #aab2c0; white-space: nowrap; }
+.hud-hz.hud-warn { color: #ff8a80; font-weight: 700; }
+.hud-graph { flex: none; width: 360px; height: 72px; background: rgba(255, 255, 255, 0.06); }
+.hud-numbers { display: flex; flex: 1 1 auto; gap: 20px; min-width: 0; justify-content: flex-end; }
+.hud-numbers div { display: flex; flex-direction: column; min-width: 0; }
+.hud-label { font-size: 12px; color: #aab2c0; white-space: nowrap; }
+.hud-numbers b { font-size: 28px; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }

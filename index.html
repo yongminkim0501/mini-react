@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mini-react · Virtual DOM 검증</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="toolbar">
+      <button type="button" id="btn-back" disabled>◀ 뒤로가기</button>
+      <button type="button" id="btn-patch" class="primary">Patch</button>
+      <button type="button" id="btn-forward" disabled>앞으로가기 ▶</button>
+      <span id="history-pos" class="position" aria-live="polite">0 / 0</span>
+      <a class="nav-link" href="/phase2/">Phase 2 데모 →</a>
+    </header>
+
+    <main class="areas">
+      <section class="panel">
+        <h2 class="panel-title">실제 영역</h2>
+        <div id="real-area">
+          <h1 class="title">장보기 목록</h1>
+          <!-- 샘플 -->
+          <ul>
+            <li data-key="a">사과</li>
+            <li data-key="b">바나나</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title"><label for="test-area">테스트 영역</label></h2>
+        <textarea id="test-area" spellcheck="false" wrap="soft"></textarea>
+      </section>
+    </main>
+
+    <footer class="report">
+      <div id="status" role="status" aria-live="polite"></div>
+      <ol id="patch-log"></ol>
+      <p id="patch-count"></p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

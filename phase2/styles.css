@@ -1,0 +1,171 @@
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --border: #d9dde3;
+  --text: #1f2328;
+  --muted: #656d76;
+  --primary: #2f6feb;
+  --done: #8c959f;
+  font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  background: var(--bg);
+}
+
+.nav {
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+.nav a {
+  color: var(--primary);
+}
+
+/* ── 앱 ─────────────────────────────────────────── */
+
+.todo-app {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.header h1 {
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+}
+
+.todo-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.todo-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+button.add {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.filter.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.todo label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.todo.done span {
+  color: var(--done);
+  text-decoration: line-through;
+}
+
+.remove {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.empty {
+  margin: 8px 0;
+  color: var(--muted);
+}
+
+.footer {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ── 디버그 패널 ─────────────────────────────────── */
+
+.debug-panel {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.debug-panel h2 {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+}
+
+.debug-panel h3 {
+  margin: 8px 0 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.debug-panel ol {
+  margin: 0;
+  padding-left: 2em;
+  overflow-wrap: anywhere;
+}
+
+.debug-renders,
+.debug-summary {
+  margin: 0;
+}
+
+.debug-summary {
+  color: var(--muted);
+}
