@@ -1,9 +1,109 @@
 # mini-react
 크래프톤 정글 11주차 미니 리액트 구현
 
+## 단계 1 완료 · stack에서 입력 경로 생략까지
+
+2026-11-11 B-4 진단 승인으로 단계 1을 종료했다. 같은 앱을 다섯 엔진으로 실행할 수 있으며 엔진·앱 구현은 동결한다. B-5, 경계 기록 경량화, CSS 렌더링 격리는 후속 과제로만 남긴다.
+
+### 단계별 사다리 · 20k S1~S4
+
+카운터 OFF 프로덕션 수치가 있는 셀을 우선 사용했다. 초기 세 엔진의 OFF 프로덕션 자료와 S4의 OFF 프로덕션 자료는 없어 기존 개발 서버 값을 출처와 함께 사용했다. **이 표는 서로 다른 시점·빌드의 자료를 모은 사다리이며, 행 사이 차이를 한 세션의 개선율로 계산하지 않는다.** 관문 효과는 아래 동일 관문의 교차 측정 자료로 확인한다.
+
+| 엔진 | 앱 | S1 작업 ms/커밋 | S1 최장 Long Task ms | S2 입력 p95 ms | S3 클릭 p95 ms | S4 진행 바 fps / 커밋 수 | 출처 S1~3 / S4 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| stack | current | 107.2 | 122.0 | 152.3 | 190.2 | 10.7 / 28.0 | A / A |
+| fiber-sync | current | 96.4 | 111.0 | 138.4 | 170.5 | 11.2 / 29.7 | A / A |
+| fiber-slice | current | 123.4 | 71.0 | 481.1 | 379.7 | 22.0 / 20.3 | A / A |
+| fiber | current | 135.4 | 73.0 | 91.0 | 87.7 | 34.1 / 14.0 | B / C |
+| fiber-bailout | cached | 136.3 | 79.0 | 28.2 | 90.5 | 35.6 / 12.7 | B / C |
+
+- **A:** [B-2 원자료](docs/results/fiber-slice-b2/fiber-slice-cross.json), `485435c`, 개발 서버·B-4 카운터 도입 전. stack/fiber-sync/fiber-slice는 같은 세션이다.
+- **B:** [프로덕션 OFF 원자료](docs/results/fiber-b4-diagnostics/production.json.gz), `42b0d96`, S1→S3→S2 교차 측정. [분석 JSON](docs/results/fiber-b4-diagnostics/analysis.json)과 [실행별 CSV](docs/results/fiber-b4-diagnostics/production-per-run.csv)도 있다.
+- **C:** [B-4 원자료](docs/results/fiber-bailout-b4/fiber-bailout-cross.json), `9b3084e`, 카운터 ON 개발 서버. S4의 fiber/current와 fiber-bailout/cached를 사용했다. 두 조합 모두 데이터 변경으로 경계 적중은 0이다.
+
+[사다리 집계 JSON](docs/results/phase1-summary.json)은 각 셀의 출처·경과 시간·수신/커밋 수·경고를 보존한다. 모든 값은 size=20,000·seed=42·cellCost=0, 조합별 워밍업 1회 제외 3회다. 시간/fps/커밋 수는 실행별 평균의 3회 평균, 지연은 **예정 시각 기준 실행별 p95의 평균**, 최장 Long Task는 3회 전체 최댓값이다. 작업 시간은 양보 대기를 제외한 Render+Commit 구간 합계이며 OS CPU 시간이 아니다.
+
+A의 S4 stack/fiber-sync에는 각각 2/3회의 `in-run-refresh-unstable` 경고가 있다. 표본은 유지했고 사전 60Hz 예산을 바꾸지 않았다. S4 커밋/실행이 다르므로 fps 증가를 같은 처리량의 증가로 읽지 않는다. 결측은 N/A이며 새 측정으로 빈칸을 채우지 않았다.
+
+### 관문별 교훈
+
+| 관문 | 배운 점과 근거 |
+| --- | --- |
+| B-1 · fiber-sync | 반복 작업 루프·Render/Commit 분리·더블 버퍼링을 만들어도 전체 트리 계산은 남는다. 자료구조만으로 응답 문제가 풀리지 않았고, 같은 B-1 세션의 S4 진행 바는 stack 10.6 / sync 11.2fps였다. [B-1](docs/codex/B1-fiber-sync.md) |
+| B-2 · fiber-slice | 5ms 양보가 렌더 계산의 긴 독점을 풀어 S4 진행 바에 숨통을 틔웠지만, 단일 레인의 앞 렌더를 기다리는 입력은 나빠졌다. 같은 B-2 세션의 S2 p95는 stack 152.3 → slice 481.1ms이며 동기 Commit·브라우저 렌더링 비용은 남았다. [B-2](docs/codex/B2-fiber-slice.md) |
+| B-3 · fiber | 우선순위·중단/재시작이 입력을 먼저 처리하게 했다. 같은 B-3 세션에서 S2 slice 416.2 → fiber 93.2ms, S3 402.0 → 88.9ms로 줄었지만 Sync의 전체 트리 재조정은 남았다. [B-3](docs/codex/B3-fiber.md) |
+| B-4 · fiber-bailout | 입력 경로의 일을 실제로 줄여야 Sync가 짧아진다. 같은 OFF 프로덕션의 cached 앱에서 fiber → bailout은 S2 입력 p95 87.2 → 28.2ms, Sync Render 약 61.6 → 0.195ms였으며 브라우저 프레임 대기는 남았다. [B-4](docs/codex/B4-fiber-bailout.md), [진단](docs/codex/B4-diagnosis.md) |
+
+### 남은 한계
+
+- **S3 클릭:** selected가 바뀌면 Heatmap 캐시가 깨져 Row/Cell 함수를 전부 다시 실행한다. DOM 변경 수가 작아도 함수 재실행 범위는 크다. B-4 Sync 클릭 30건은 내부 DOM 쓰기 57회에 대해 함수 호출 606,030회였다.
+- **최종 히트맵 반영:** 입력 echo가 빨라도 Transition의 최종 반영은 늦을 수 있다. B-4의 마지막 attempt 경과 차이 179.5ms 중 작업 차이는 9.4ms였고, 별도 trace 두 표본에서 조각 사이 잔차의 약 93%는 브라우저 렌더링과 겹쳤다. 재측정의 최종 반영은 fiber 432.8 / bailout 408.3ms로 순서도 달라졌다. 폐기 총량을 마지막 입력 뒤 지연의 직접 원인으로 합산하지 않는다.
+- **미스 오버헤드:** OFF 프로덕션에서도 커밋당 작업 비용 증가가 S3 +6.3~8.8%, S2 current +9.9%로 남았다. S1은 current +0.05%, cached +9.11%로 분산됐다. “6~10%”는 특정 미스 경로의 관측 범위이며 모든 시나리오의 고정 비용이 아니다. 경계 기록의 할당/조회와 관측 코드·JIT/GC 영향을 구분한다.
+- **앱 협조와 계약:** 같은 VComponent를 다시 전달해야 적중한다. 루트의 onSelect/Heatmap VNode useMemo 두 개가 필요하며, current 앱에서 모드만 켜면 적중 없이 기록 비용이 더해진다. 자식은 순수해야 하고 중첩 데이터 제자리 수정은 계약 위반이다. key 비교·bailout/memo의 일반화·자식 Hook/컨텍스트는 이번 범위가 아니다.
+
+### 후속 과제 · 구현하지 않음
+
+| 과제 | 다음에 검토할 범위 |
+| --- | --- |
+| 행 단위 클릭 | 루트의 고정 useMemo로 rowsBase/rows를 만들고 이전/새 선택 행만 새 VNode로 바꾸는 [rowsBase 설계](docs/codex/B4-design.md). 커밋 안전성과 앱 변형/엔진 비교 공정성을 다시 검증한다. |
+| 경계 기록 경량화 | 기록 객체·인덱스·경로 할당과 보유 비용을 줄이는 별도 설계. 이번 진단에서는 위치와 생성 수만 보고했다. |
+| CSS 렌더링 격리 | 진행 바 갱신과 큰 히트맵의 Layout/Paint 범위를 분리할 수 있는지 별도 실험한다. 엔진의 Render 생략과 브라우저 렌더링 비용을 각각 측정한다. |
+
+세 과제 모두 별도 승인 전 착수하지 않는다.
+
+### 실제 React와의 대응
+
+[B-4 설계서의 확인 내용](docs/codex/B4-design.md)을 요약한다. 소스 비교 기준은 React **v19.2.0**이며 최신 버전 전체를 재현했다는 뜻은 아니다.
+
+- 이번 방식은 **기본 props 동일성 bailout + JSX 노드 메모이제이션**에 대응한다. 같은 element 객체를 다시 전달하는 [JSX 노드 useMemo](https://react.dev/reference/react/useMemo#memoizing-individual-jsx-nodes) 패턴과 연결된다.
+- 실제 React는 props 참조뿐 아니라 업데이트 레인·컨텍스트·하위 작업도 확인한다. 여기서는 루트만 Hook을 가지며 순수 자식의 상태/컨텍스트가 없어 조건이 단순하다.
+- [React.memo](https://react.dev/reference/react/memo)는 기본적으로 prop별 Object.is를 비교한다. 이 프로젝트는 같은 부모·같은 위치의 VComponent 객체 ===와 단일 host 반환에 한정한다. 한 host 헤더만 복제하는 방식도 본 프로젝트의 선택이다.
+- startTransition은 업데이트의 우선순위를 표시한다. memo 래퍼가 API의 필수 조건은 아니며, 비싼 자식의 같은 입력을 생략할 수 있어야 긴급 경로의 일이 줄어든다. 스케줄링과 생략을 구분한다.
+
+### 재현 · 환경 · 영상
+
+```sh
+npm ci
+B4_COUNTERS=off npm run build -- --outDir /private/tmp/mini-react-phase1-off
+npm run preview -- --host 127.0.0.1 --port 5183 --strictPort --outDir /private/tmp/mini-react-phase1-off
+```
+
+5183이 사용 중이면 기존 서버를 먼저 종료한다. [비교 영상용 URL 40개](docs/codex/phase1-recording-urls.md)에 엔진·앱 변형·S1~S4 링크와 녹화 순서를 정리했다. 영상 자체는 생성하지 않았다. 정량 재현은 HUD를 끄고, 영상은 `hud=record`를 사용한다. 영상용 HUD는 추가 작업을 만들며 과거 개발 서버 숫자와 동일하다고 보장하지 않는다.
+
+| 기록된 환경 | 값 |
+| --- | --- |
+| 브라우저 | Chromium 153.0.8010.12, headed, CPU throttle 1배 |
+| viewport / DPR | 1280×720 / 2 |
+| 전원 / 논리 코어 | AC 연결·배터리 100% / 10 |
+| 사전 프레임 예산 | 60Hz, 16.67ms; 끊김 기준 34.33ms |
+| 반복 | 조합당 워밍업 1회 제외 3회 |
+| 빌드 | A/C 개발 서버, B는 Vite 프로덕션 build + preview / 카운터 OFF |
+
+추가 환경·시각·코드 커밋은 각 원자료의 environment/provenance에 있다. 프레임 예산은 실행 전 추정으로 고정하며 실행 중 빈도는 진단값이다. 정량 측정·카운터 집계·진단 재현 명령은 아래 측정 방법과 관문 보고서를 참고한다.
+
+### 원자료와 최종 검사
+
+| 자료 | 보고서 / 원자료 |
+| --- | --- |
+| 초기 stack 기준선 | [보고서](docs/results/stack-baseline.md) / [JSON](docs/results/stack-baseline.json) — 역사 자료, 위 사다리에 섞지 않음 |
+| B-1 sync | [보고서](docs/codex/B1-fiber-sync.md) / [JSON](docs/results/fiber-sync-b1/fiber-sync-cross.json) / [trace 집계](docs/results/fiber-sync-b1/trace-summary.json) |
+| B-2 slice | [보고서](docs/codex/B2-fiber-slice.md) / [JSON](docs/results/fiber-slice-b2/fiber-slice-cross.json) / [trace 집계](docs/results/fiber-slice-b2/trace-summary.json) |
+| B-3 레인/중단 | [보고서](docs/codex/B3-fiber.md) / [JSON](docs/results/fiber-b3/fiber-cross.json) / [trace 집계](docs/results/fiber-b3/trace-summary.json) / [렌더링 진단](docs/results/fiber-b3/layout-diagnostic-summary.json) |
+| B-4 경계 생략 | [설계](docs/codex/B4-design.md) / [보고서](docs/codex/B4-fiber-bailout.md) / [JSON](docs/results/fiber-bailout-b4/fiber-bailout-cross.json) / [카운터 CSV](docs/results/fiber-bailout-b4/counters.csv) |
+| B-4 승인 후 진단 | [보고서](docs/codex/B4-diagnosis.md) / [분석 JSON](docs/results/fiber-b4-diagnostics/analysis.json) / [프로덕션 JSON.gz](docs/results/fiber-b4-diagnostics/production.json.gz) / [attempt JSON.gz](docs/results/fiber-b4-diagnostics/attempt-original.json.gz) / [trace 세션 JSON.gz](docs/results/fiber-b4-diagnostics/trace.json.gz) |
+| 단계 1 요약 | [출처 포함 JSON](docs/results/phase1-summary.json) / [녹화 URL](docs/codex/phase1-recording-urls.md) |
+
+2026-11-11 단계 1 정리 시 Node v26.7.0에서 재실행했다. 새 성능 측정은 하지 않았다.
+
+| 명령 | 실제 결과 |
+| --- | --- |
+| `npm run test:run` | 35개 파일, 357개 테스트 통과 |
+| `npm run typecheck` | tsc --noEmit, 종료 코드 0 |
+| `npm run build` | 타입 검사·Vite 프로덕션 빌드, 종료 코드 0 |
+
 ## 배포 지연 추적 화면과 측정 방법
 
-현재 엔진(동기 재귀 렌더링, 이하 stack)으로 실제에 가까운 앱을 만들어 세 가지 문제를 잰다. 대규모 업데이트 중 UI 멈춤, 타이핑·클릭 렉, 애니메이션 끊김이다. 이후 Fiber 엔진을 같은 페이지에 연결해 비교한다. 결정 근거는 [`docs/decisions.md`](docs/decisions.md), stack 기준선은 [`docs/results/stack-baseline.md`](docs/results/stack-baseline.md)에 있다.
+동기 재귀 엔진(stack)과 네 Fiber 모드를 같은 앱에 연결해 대규모 업데이트의 UI 멈춤, 타이핑·클릭 지연, 애니메이션 끊김을 측정한다. 단계 1의 구현·측정·진단은 완료했다. 결정 근거는 [`docs/decisions.md`](docs/decisions.md), stack 기준선은 [`docs/results/stack-baseline.md`](docs/results/stack-baseline.md)에 있다.
 
 ### 화면의 역할
 
