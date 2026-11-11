@@ -1,0 +1,40 @@
+import { h } from '../runtime/h';
+import { useEffect, useMemo, useState } from './hooks';
+import { FiberRoot } from './root';
+import type { Child } from '../runtime/types';
+import type { EngineEvent } from './types';
+import { SliceScheduler } from './scheduler';
+import { runWithLane, TransitionLane } from './lanes';
+
+export { h, useEffect, useMemo, useState, FiberRoot };
+
+/** Shared host reconciliation/commit; fiber additionally selects lanes and rebases queues. */
+export function createFiberSyncEngine() {
+  return createEngine('fiber-sync');
+}
+export function createFiberSliceEngine(scheduler = new SliceScheduler()) {
+  return createEngine('fiber-slice', scheduler);
+}
+export function createFiberEngine(scheduler = new SliceScheduler(undefined, undefined, true)) {
+  return createEngine('fiber', scheduler);
+}
+export function createFiberBailoutEngine(scheduler = new SliceScheduler(undefined, undefined, true)) {
+  return createEngine('fiber-bailout', scheduler);
+}
+function createEngine(mode: 'fiber-sync' | 'fiber-slice' | 'fiber' | 'fiber-bailout', scheduler?: SliceScheduler) {
+  const listeners = new Set<(event: EngineEvent) => void>();
+  return {
+    mode, h, useEffect, useMemo, useState,
+    startTransition(fn: () => void) { if (mode === 'fiber' || mode === 'fiber-bailout') runWithLane(TransitionLane, fn); else fn(); },
+    createRoot(component: (props: any) => Child, container: Element, { label, props = {} }: { label: string; props?: object }) {
+      const root = new FiberRoot(component, container, label, Object.freeze({ ...props, children: [] }),
+        (event) => { for (const listener of listeners) listener(event); }, scheduler, (mode === 'fiber' || mode === 'fiber-bailout'), mode === 'fiber-bailout');
+      return { label, instance: root, mount: () => root.mount(), unmount: () => root.unmount() };
+    },
+    subscribe(listener: (event: EngineEvent) => void) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    dispose() { scheduler?.dispose(); listeners.clear(); },
+  };
+}

@@ -1,0 +1,20 @@
+{
+  "runtimeBaseline": "6b99b59",
+  "engineAppChanges": "",
+  "builds": {
+    "on": {
+      "file": "labHeatmap-DFF3V_tf.js",
+      "bytes": 50282,
+      "sha256": "105234258c6037fd298a95ccacbb2e74427ec0fe432d9f9f99bc9c6dbca73c60",
+      "counterKeysPresent": true,
+      "reverseIndexFieldPresent": true
+    },
+    "off": {
+      "file": "labHeatmap-D4DvvDaq.js",
+      "bytes": 47856,
+      "sha256": "f5ca4834f5806076fa0b01340b3f2e3b58b317127140371cbcf1fbb1703324c1",
+      "counterKeysPresent": false,
+      "reverseIndexFieldPresent": false
+    }
+  }
+}

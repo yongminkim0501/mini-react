@@ -1,0 +1,43 @@
+{
+  "provenance": {
+    "commit": "adbeb14dcbefaa2525bc34685092df4c02adc7fc",
+    "dirty": "",
+    "phase": "smoke",
+    "headed": true,
+    "cpuThrottle": 1
+  },
+  "rows": [
+    {
+      "engine": "fiber",
+      "counters": "on",
+      "htmlSha256": "34418f660aee3872b3e1d785eabe12855664d5ea606aa26fd097f25cdf88417a",
+      "title": "web-ne-01 14:00 \u00b7 \ubc30\ud3ec \uc9c0\uc5f0 \ucd94\uc801 \u00b7 mini-react lab",
+      "selectionSeq": "2",
+      "counterTotalsPresent": true
+    },
+    {
+      "engine": "fiber-bailout",
+      "counters": "on",
+      "htmlSha256": "34418f660aee3872b3e1d785eabe12855664d5ea606aa26fd097f25cdf88417a",
+      "title": "web-ne-01 14:00 \u00b7 \ubc30\ud3ec \uc9c0\uc5f0 \ucd94\uc801 \u00b7 mini-react lab",
+      "selectionSeq": "2",
+      "counterTotalsPresent": true
+    },
+    {
+      "engine": "fiber",
+      "counters": "off",
+      "htmlSha256": "34418f660aee3872b3e1d785eabe12855664d5ea606aa26fd097f25cdf88417a",
+      "title": "web-ne-01 14:00 \u00b7 \ubc30\ud3ec \uc9c0\uc5f0 \ucd94\uc801 \u00b7 mini-react lab",
+      "selectionSeq": "2",
+      "counterTotalsPresent": false
+    },
+    {
+      "engine": "fiber-bailout",
+      "counters": "off",
+      "htmlSha256": "34418f660aee3872b3e1d785eabe12855664d5ea606aa26fd097f25cdf88417a",
+      "title": "web-ne-01 14:00 \u00b7 \ubc30\ud3ec \uc9c0\uc5f0 \ucd94\uc801 \u00b7 mini-react lab",
+      "selectionSeq": "2",
+      "counterTotalsPresent": false
+    }
+  ]
+}

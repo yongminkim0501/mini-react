@@ -1,0 +1,1325 @@
+{
+  "attemptMethod": "existing runner.runScenario",
+  "original": [
+    {
+      "engine": "fiber",
+      "run": 1,
+      "syncToStartMs": 14.099999904632568,
+      "workMs": 131.200000166893,
+      "renderWorkMs": 113.30000019073486,
+      "elapsedMs": 255,
+      "browserAndOtherGapMs": 123.799999833107,
+      "slices": 23,
+      "settleMs": 346.09999990463257,
+      "discardedMs": 118.89999985694885
+    },
+    {
+      "engine": "fiber",
+      "run": 2,
+      "syncToStartMs": 0.10000002384185791,
+      "workMs": 130.30000019073486,
+      "renderWorkMs": 111.00000023841858,
+      "elapsedMs": 246.79999995231628,
+      "browserAndOtherGapMs": 116.49999976158142,
+      "slices": 22,
+      "settleMs": 323.39999997615814,
+      "discardedMs": 122.69999980926514
+    },
+    {
+      "engine": "fiber",
+      "run": 3,
+      "syncToStartMs": 0.20000004768371582,
+      "workMs": 126.09999990463257,
+      "renderWorkMs": 111,
+      "elapsedMs": 277.7999999523163,
+      "browserAndOtherGapMs": 151.70000004768372,
+      "slices": 22,
+      "settleMs": 353,
+      "discardedMs": 118.59999978542328
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 1,
+      "syncToStartMs": 12.100000023841858,
+      "workMs": 138.29999995231628,
+      "renderWorkMs": 122.89999997615814,
+      "elapsedMs": 428.6999999284744,
+      "browserAndOtherGapMs": 290.39999997615814,
+      "slices": 25,
+      "settleMs": 441.10000002384186,
+      "discardedMs": 539.7999999523163
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 2,
+      "syncToStartMs": 11.699999928474426,
+      "workMs": 137.39999997615814,
+      "renderWorkMs": 122.5,
+      "elapsedMs": 424,
+      "browserAndOtherGapMs": 286.60000002384186,
+      "slices": 25,
+      "settleMs": 435.7999999523163,
+      "discardedMs": 551.7999999523163
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 3,
+      "syncToStartMs": 14.100000023841858,
+      "workMs": 140.20000004768372,
+      "renderWorkMs": 125.20000004768372,
+      "elapsedMs": 465.2999999523163,
+      "browserAndOtherGapMs": 325.09999990463257,
+      "slices": 26,
+      "settleMs": 479.7000000476837,
+      "discardedMs": 537.1000002622604
+    }
+  ],
+  "attempts": [
+    {
+      "engine": "fiber",
+      "run": 1,
+      "rootId": 6,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 20577.399999976158,
+      "end": 20948.699999928474,
+      "syncCommit": 20564.599999904633,
+      "syncToStartMs": 12.800000071525574,
+      "renderWorkMs": 113.10000026226044,
+      "workMs": 130.40000021457672,
+      "commitWorkMs": 17.299999952316284,
+      "elapsedMs": 371.2999999523163,
+      "slices": 23,
+      "targetRunSliceMs": 130.40000021457672,
+      "progressMs": 2.399999737739563,
+      "otherLaneMs": 0,
+      "browserGapMs": 238.5,
+      "progressSlices": 19,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 126.39999997615814,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 79.39999997615814,
+      "commitToFrameMs": 0.10000002384185791,
+      "settleMs": 463.60000002384186,
+      "warnings": []
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 1,
+      "rootId": 8,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 26223.399999976158,
+      "end": 26611.899999976158,
+      "syncCommit": 26211.799999952316,
+      "syncToStartMs": 11.600000023841858,
+      "renderWorkMs": 132.19999992847443,
+      "workMs": 149.5,
+      "commitWorkMs": 17.300000071525574,
+      "elapsedMs": 388.5,
+      "slices": 26,
+      "targetRunSliceMs": 149.5,
+      "progressMs": 2.4999998807907104,
+      "otherLaneMs": 0,
+      "browserGapMs": 236.5000001192093,
+      "progressSlices": 20,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 638.600000500679,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 0.20000004768371582,
+      "commitToFrameMs": 0.19999992847442627,
+      "settleMs": 400.5,
+      "warnings": []
+    },
+    {
+      "engine": "fiber",
+      "run": 2,
+      "rootId": 10,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 32016,
+      "end": 32389.5,
+      "syncCommit": 32015.799999952316,
+      "syncToStartMs": 0.20000004768371582,
+      "renderWorkMs": 112.30000007152557,
+      "workMs": 128.60000014305115,
+      "commitWorkMs": 16.300000071525574,
+      "elapsedMs": 373.5,
+      "slices": 23,
+      "targetRunSliceMs": 128.60000014305115,
+      "progressMs": 2.099999785423279,
+      "otherLaneMs": 0,
+      "browserGapMs": 242.80000007152557,
+      "progressSlices": 18,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 123.69999969005585,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 76.5,
+      "commitToFrameMs": 0.09999990463256836,
+      "settleMs": 450.2999999523163,
+      "warnings": []
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 2,
+      "rootId": 12,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 37677.199999928474,
+      "end": 38054.89999997616,
+      "syncCommit": 37677,
+      "syncToStartMs": 0.19999992847442627,
+      "renderWorkMs": 123.10000026226044,
+      "workMs": 138.00000023841858,
+      "commitWorkMs": 14.899999976158142,
+      "elapsedMs": 377.7000000476837,
+      "slices": 25,
+      "targetRunSliceMs": 138.00000023841858,
+      "progressMs": 1.9999998807907104,
+      "otherLaneMs": 0,
+      "browserGapMs": 237.69999992847443,
+      "progressSlices": 18,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 604.9999998807907,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 0.20000004768371582,
+      "commitToFrameMs": 0.10000002384185791,
+      "settleMs": 378.2000000476837,
+      "warnings": []
+    },
+    {
+      "engine": "fiber",
+      "run": 3,
+      "rootId": 14,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 43479.799999952316,
+      "end": 43777.89999997616,
+      "syncCommit": 43468.199999928474,
+      "syncToStartMs": 11.600000023841858,
+      "renderWorkMs": 107.79999959468842,
+      "workMs": 123.09999966621399,
+      "commitWorkMs": 15.300000071525574,
+      "elapsedMs": 298.10000002384186,
+      "slices": 22,
+      "targetRunSliceMs": 123.09999966621399,
+      "progressMs": 1.6000003814697266,
+      "otherLaneMs": 0,
+      "browserGapMs": 173.39999997615814,
+      "progressSlices": 14,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 130.20000004768372,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 74.79999995231628,
+      "commitToFrameMs": 0.10000002384185791,
+      "settleMs": 384.60000002384186,
+      "warnings": []
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 3,
+      "rootId": 16,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 49140.59999990463,
+      "end": 49575.39999997616,
+      "syncCommit": 49129.5,
+      "syncToStartMs": 11.099999904632568,
+      "renderWorkMs": 130.69999980926514,
+      "workMs": 146.4999998807907,
+      "commitWorkMs": 15.800000071525574,
+      "elapsedMs": 434.8000000715256,
+      "slices": 26,
+      "targetRunSliceMs": 146.4999998807907,
+      "progressMs": 2.100000023841858,
+      "otherLaneMs": 0,
+      "browserGapMs": 286.200000166893,
+      "progressSlices": 20,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 636.3000001907349,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 0.30000007152557373,
+      "commitToFrameMs": 0,
+      "settleMs": 446.2000000476837,
+      "warnings": []
+    }
+  ],
+  "warningCheck": {
+    "perRun": [
+      {
+        "run": 1,
+        "unstable": false,
+        "p95": 217.66999995708466,
+        "inputs": 19,
+        "preRunHz": 60,
+        "observedHz": 60
+      },
+      {
+        "run": 2,
+        "unstable": false,
+        "p95": 209.57999995946884,
+        "inputs": 19,
+        "preRunHz": 60,
+        "observedHz": 60
+      },
+      {
+        "run": 3,
+        "unstable": false,
+        "p95": 214.34000002145766,
+        "inputs": 19,
+        "preRunHz": 60,
+        "observedHz": 60
+      }
+    ],
+    "allRunP95Mean": 213.8633333126704,
+    "warningFreeRunP95Mean": 213.8633333126704,
+    "allPooledP95": 214.58000001907348,
+    "warningFreePooledP95": 214.58000001907348,
+    "warningFreeRuns": 3
+  },
+  "trace": [
+    {
+      "engine": "fiber",
+      "run": 1,
+      "rootId": 9,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 25189.400000095367,
+      "end": 25499.400000095367,
+      "syncCommit": 25189.100000023842,
+      "syncToStartMs": 0.30000007152557373,
+      "renderWorkMs": 109.10000014305115,
+      "workMs": 123.90000021457672,
+      "commitWorkMs": 14.800000071525574,
+      "elapsedMs": 310,
+      "slices": 22,
+      "targetRunSliceMs": 123.90000021457672,
+      "progressMs": 1.2000000476837158,
+      "otherLaneMs": 0,
+      "browserGapMs": 184.89999973773956,
+      "progressSlices": 12,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 131.90000021457672,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 74.79999995231628,
+      "commitToFrameMs": 0.09999990463256836,
+      "settleMs": 385.1999999284744,
+      "warnings": [],
+      "traceFilename": "final-attempt-fiber.trace.json.gz",
+      "clockOffsetMs": 607654821.278,
+      "browserRenderingMs": 171.73599982261658,
+      "renderingInOwnCallsMs": 0.004000067710876465,
+      "renderingInAnyEngineCallsMs": 0.004000067710876465,
+      "renderingInGapMs": 171.7319997549057,
+      "renderingOutsideOwnCallsMs": 171.7319997549057,
+      "byCategory": {
+        "UpdateLayoutTree": 0.7390000820159912,
+        "RecalculateStyles": 0,
+        "Layout": 5.51199996471405,
+        "PrePaint": 11.78600001335144,
+        "Paint": 91.53999984264374,
+        "Layerize": 62.15899991989136,
+        "CompositeLayers": 0
+      }
+    },
+    {
+      "engine": "fiber-bailout",
+      "run": 1,
+      "rootId": 12,
+      "attemptId": 39,
+      "matchQuery": "deploy-1742 err-503",
+      "start": 33343.700000047684,
+      "end": 33737.800000071526,
+      "syncCommit": 33332.200000047684,
+      "syncToStartMs": 11.5,
+      "renderWorkMs": 136.39999997615814,
+      "workMs": 154.5,
+      "commitWorkMs": 18.100000023841858,
+      "elapsedMs": 394.10000002384186,
+      "slices": 26,
+      "targetRunSliceMs": 154.5,
+      "progressMs": 2.3999998569488525,
+      "otherLaneMs": 0,
+      "browserGapMs": 237.200000166893,
+      "progressSlices": 16,
+      "sameQueryAborted": [],
+      "discardedBeforeSyncMs": 645.4999997615814,
+      "abortsAfterSync": 0,
+      "discardedRunSliceAfterInteractionMs": 0,
+      "interactionEndToSyncMs": 0.3999999761581421,
+      "commitToFrameMs": 0.19999992847442627,
+      "settleMs": 406.1999999284744,
+      "warnings": [],
+      "traceFilename": "final-attempt-fiber-bailout.trace.json.gz",
+      "clockOffsetMs": 607654821.2729999,
+      "browserRenderingMs": 221.7599996328354,
+      "renderingInOwnCallsMs": 0,
+      "renderingInAnyEngineCallsMs": 0,
+      "renderingInGapMs": 221.7599996328354,
+      "renderingOutsideOwnCallsMs": 221.7599996328354,
+      "byCategory": {
+        "UpdateLayoutTree": 0.9090003967285156,
+        "RecalculateStyles": 0,
+        "Layout": 8.11300003528595,
+        "PrePaint": 19.69599962234497,
+        "Paint": 115.61199998855591,
+        "Layerize": 77.42999958992004,
+        "CompositeLayers": 0
+      }
+    }
+  ],
+  "production": [
+    {
+      "scenario": "S1",
+      "app": "current",
+      "on": {
+        "fiberMs": 149.03333348698087,
+        "bailoutMs": 162.9666665395101,
+        "increasePercent": 9.34913869704619
+      },
+      "off": {
+        "fiberMs": 135.44444443119895,
+        "bailoutMs": 135.51111123296948,
+        "increasePercent": 0.0492207724358984
+      },
+      "increaseDifferencePp": -9.299917924610291
+    },
+    {
+      "scenario": "S1",
+      "app": "cached",
+      "on": {
+        "fiberMs": 152.3999999894036,
+        "bailoutMs": 163.8777777751287,
+        "increasePercent": 7.531350253624103
+      },
+      "off": {
+        "fiberMs": 124.92222228315143,
+        "bailoutMs": 136.29999996556177,
+        "increasePercent": 9.107889272591718
+      },
+      "increaseDifferencePp": 1.5765390189676154
+    },
+    {
+      "scenario": "S3",
+      "app": "current",
+      "on": {
+        "fiberMs": 84.357575748906,
+        "bailoutMs": 93.40303031242256,
+        "increasePercent": 10.722753093854598
+      },
+      "off": {
+        "fiberMs": 67.1818181962678,
+        "bailoutMs": 73.07575757936998,
+        "increasePercent": 8.773116806519553
+      },
+      "increaseDifferencePp": -1.9496362873350446
+    },
+    {
+      "scenario": "S3",
+      "app": "cached",
+      "on": {
+        "fiberMs": 82.62727272510529,
+        "bailoutMs": 92.13030302885808,
+        "increasePercent": 11.501081895040466
+      },
+      "off": {
+        "fiberMs": 67.9848484884609,
+        "bailoutMs": 72.2666666616093,
+        "increasePercent": 6.298194771847099
+      },
+      "increaseDifferencePp": -5.202887123193367
+    },
+    {
+      "scenario": "S2",
+      "app": "current",
+      "on": {
+        "fiberMs": 79.37166665395101,
+        "bailoutMs": 93.9366666674614,
+        "increasePercent": 18.350376938677226
+      },
+      "off": {
+        "fiberMs": 63.374999986092256,
+        "bailoutMs": 69.63166666626931,
+        "increasePercent": 9.872452357475492
+      },
+      "increaseDifferencePp": -8.477924581201734
+    },
+    {
+      "scenario": "S2",
+      "app": "cached",
+      "on": {
+        "fiberMs": 78.34000001152357,
+        "bailoutMs": 7.54999998609225,
+        "increasePercent": -90.36252235769508
+      },
+      "off": {
+        "fiberMs": 63.78166666229566,
+        "bailoutMs": 5.688333324591319,
+        "increasePercent": -91.08155427372367
+      },
+      "increaseDifferencePp": -0.7190319160285839
+    }
+  ],
+  "productionLanes": [
+    {
+      "scenario": "S1",
+      "app": "current",
+      "counters": "on",
+      "engine": "fiber",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "current",
+      "counters": "on",
+      "engine": "fiber-bailout",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "current",
+      "counters": "off",
+      "engine": "fiber",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "current",
+      "counters": "off",
+      "engine": "fiber-bailout",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "cached",
+      "counters": "on",
+      "engine": "fiber",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "cached",
+      "counters": "on",
+      "engine": "fiber-bailout",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "cached",
+      "counters": "off",
+      "engine": "fiber",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S1",
+      "app": "cached",
+      "counters": "off",
+      "engine": "fiber-bailout",
+      "commits": 3,
+      "syncCommits": 0,
+      "transitionCommits": 3,
+      "syncRenderMs": null,
+      "syncActiveMs": null,
+      "inputP95": null,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "current",
+      "counters": "on",
+      "engine": "fiber",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 78.01333332856497,
+      "syncActiveMs": 78.09333332777022,
+      "inputP95": null,
+      "clickP95": 112.81499996383984,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "current",
+      "counters": "on",
+      "engine": "fiber-bailout",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 86.75000000397365,
+      "syncActiveMs": 86.82000000874201,
+      "inputP95": null,
+      "clickP95": 114.77500000596045,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "current",
+      "counters": "off",
+      "engine": "fiber",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 61.25666666825612,
+      "syncActiveMs": 61.32000000079472,
+      "inputP95": null,
+      "clickP95": 87.66666667461395,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "current",
+      "counters": "off",
+      "engine": "fiber-bailout",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 67.14666666984557,
+      "syncActiveMs": 67.21333334843318,
+      "inputP95": null,
+      "clickP95": 100.8566666762034,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "cached",
+      "counters": "on",
+      "engine": "fiber",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 76.11666666666666,
+      "syncActiveMs": 76.17666666110357,
+      "inputP95": null,
+      "clickP95": 105.49500000874201,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "cached",
+      "counters": "on",
+      "engine": "fiber-bailout",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 85.3199999968211,
+      "syncActiveMs": 85.38333333333334,
+      "inputP95": null,
+      "clickP95": 119.44999996821086,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "cached",
+      "counters": "off",
+      "engine": "fiber",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 62.42000001271566,
+      "syncActiveMs": 62.52666666507721,
+      "inputP95": null,
+      "clickP95": 91.45333327849706,
+      "warnings": []
+    },
+    {
+      "scenario": "S3",
+      "app": "cached",
+      "counters": "off",
+      "engine": "fiber-bailout",
+      "commits": 11,
+      "syncCommits": 10,
+      "transitionCommits": 1,
+      "syncRenderMs": 66.42999999523163,
+      "syncActiveMs": 66.48333332141242,
+      "inputP95": null,
+      "clickP95": 90.52666668097179,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "current",
+      "counters": "on",
+      "engine": "fiber",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 76.0807017401645,
+      "syncActiveMs": 76.11929823222913,
+      "inputP95": 106.10999997059503,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "current",
+      "counters": "on",
+      "engine": "fiber-bailout",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 91.17368420383387,
+      "syncActiveMs": 91.2070175409317,
+      "inputP95": 259.0633333325386,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "current",
+      "counters": "off",
+      "engine": "fiber",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 61.16491228028348,
+      "syncActiveMs": 61.19824560901575,
+      "inputP95": 90.95000003178914,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "current",
+      "counters": "off",
+      "engine": "fiber-bailout",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 67.17894736925761,
+      "syncActiveMs": 67.21754386341362,
+      "inputP95": 101.44333330790202,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "cached",
+      "counters": "on",
+      "engine": "fiber",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 75.53859649624741,
+      "syncActiveMs": 75.5877193045198,
+      "inputP95": 105.31333334843316,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "cached",
+      "counters": "on",
+      "engine": "fiber-bailout",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 0.23859648118939317,
+      "syncActiveMs": 0.2701754277212578,
+      "inputP95": 25.566666682561234,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "cached",
+      "counters": "off",
+      "engine": "fiber",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 61.59473684168699,
+      "syncActiveMs": 61.62807017251064,
+      "inputP95": 87.15666667620341,
+      "clickP95": null,
+      "warnings": []
+    },
+    {
+      "scenario": "S2",
+      "app": "cached",
+      "counters": "off",
+      "engine": "fiber-bailout",
+      "commits": 20,
+      "syncCommits": 19,
+      "transitionCommits": 1,
+      "syncRenderMs": 0.19473684043215034,
+      "syncActiveMs": 0.2157894707562631,
+      "inputP95": 28.1833332935969,
+      "clickP95": null,
+      "warnings": []
+    }
+  ],
+  "productionValidation": {
+    "runs": 72,
+    "provenance": {
+      "commit": "42b0d9657f9fbf55a6ab7baddce7d71ffb6d7800",
+      "dirty": "",
+      "phase": "production",
+      "headed": true,
+      "cpuThrottle": 1
+    },
+    "warnings": [],
+    "order": [
+      [
+        "S1",
+        0,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S1",
+        0,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S1",
+        0,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S1",
+        0,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S1",
+        0,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S1",
+        0,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S1",
+        0,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S1",
+        0,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S1",
+        1,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S1",
+        1,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S1",
+        1,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S1",
+        1,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S1",
+        1,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S1",
+        1,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S1",
+        1,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S1",
+        1,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S1",
+        2,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S1",
+        2,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S1",
+        2,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S1",
+        2,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S1",
+        2,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S1",
+        2,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S1",
+        2,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S1",
+        2,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S3",
+        0,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S3",
+        0,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S3",
+        0,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S3",
+        0,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S3",
+        0,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S3",
+        0,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S3",
+        0,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S3",
+        0,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S3",
+        1,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S3",
+        1,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S3",
+        1,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S3",
+        1,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S3",
+        1,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S3",
+        1,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S3",
+        1,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S3",
+        1,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S3",
+        2,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S3",
+        2,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S3",
+        2,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S3",
+        2,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S3",
+        2,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S3",
+        2,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S3",
+        2,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S3",
+        2,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S2",
+        0,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S2",
+        0,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S2",
+        0,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S2",
+        0,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S2",
+        0,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S2",
+        0,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S2",
+        0,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S2",
+        0,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S2",
+        1,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S2",
+        1,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S2",
+        1,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S2",
+        1,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S2",
+        1,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S2",
+        1,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S2",
+        1,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S2",
+        1,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S2",
+        2,
+        "current",
+        "fiber",
+        "on"
+      ],
+      [
+        "S2",
+        2,
+        "current",
+        "fiber",
+        "off"
+      ],
+      [
+        "S2",
+        2,
+        "current",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S2",
+        2,
+        "current",
+        "fiber-bailout",
+        "off"
+      ],
+      [
+        "S2",
+        2,
+        "cached",
+        "fiber",
+        "on"
+      ],
+      [
+        "S2",
+        2,
+        "cached",
+        "fiber",
+        "off"
+      ],
+      [
+        "S2",
+        2,
+        "cached",
+        "fiber-bailout",
+        "on"
+      ],
+      [
+        "S2",
+        2,
+        "cached",
+        "fiber-bailout",
+        "off"
+      ]
+    ]
+  }
+}
