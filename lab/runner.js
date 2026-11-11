@@ -180,6 +180,19 @@ export function createRunner({ metrics, host, info, onScenario, scenarios = SCEN
   return {
     results,
     runScenario,
+    /** Diagnostic driver controls warmup/order across two production counter builds. */
+    async measureRun(id, mode, appVariant, run) {
+      if (running) throw new Error('이미 실행 중입니다');
+      const scenario = scenarios[id];
+      if (!scenario) throw new Error(`알 수 없는 시나리오: ${id}`);
+      running = true;
+      try {
+        host.activate(mode, appVariant);
+        const environment = await collectEnvironment(metrics);
+        return { scenario:id, engine:mode, appVariant, ...info, environment,
+          summary:await runOnce(scenario, mode, run, appVariant) };
+      } finally { running = false; }
+    },
     isRunning: () => running,
   };
 }
