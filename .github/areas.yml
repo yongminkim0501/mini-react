@@ -1,0 +1,56 @@
+version: '0.2'
+areas:
+  html-to-vnode:
+    paths:
+    - src/core/html-to-vnode/**
+    owner: "@yongminkim0501"
+  vnode-to-dom:
+    paths:
+    - src/core/vnode-to-dom/**
+    owner: "@yongminkim0501"
+  vnode-to-html:
+    paths:
+    - src/core/vnode-to-html/**
+    owner: "@yongminkim0501"
+  diff:
+    paths:
+    - src/core/diff/**
+    owner: "@yongminkim0501"
+  patch:
+    paths:
+    - src/core/patch/**
+    owner: "@yongminkim0501"
+  state:
+    paths:
+    - src/state/**
+    owner: "@yongminkim0501"
+  app:
+    paths:
+    - src/app/**
+    - src/main.ts
+    - index.html
+    - styles.css
+    owner: "@yongminkim0501"
+  shared:
+    paths:
+    - .github/**
+    - scripts/**
+    - tools/ax/**
+    - issue-*/**
+    - skills/**
+    - .agents/**
+    - .claude/**
+    - .codex/**
+    - docs/**
+    - risk_issue/**
+    - README.md
+    - AGENTS.md
+    - CLAUDE.md
+    - .gitignore
+    - package.json
+    - package-lock.json
+    - tsconfig.json
+    - vite.config.ts
+    - src/setup.test.ts
+    owner: "@yongminkim0501"
+    notify: all
