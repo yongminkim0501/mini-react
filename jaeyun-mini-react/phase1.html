@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phase 1 — Virtual DOM · Diff · Patch</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html">← 처음으로</a>
+    <h1>Phase 1 — Virtual DOM · Diff · Patch · History</h1>
+    <p class="hint">
+      ① 오른쪽 <b>테스트 영역</b>의 HTML을 고친다 → ② <b>Patch</b> 클릭 → ③ 왼쪽 <b>실제 영역</b>에서 바뀐 노드만 노랗게 깜빡인다.
+      <br />스크립트·<code>on*</code> 속성·<code>javascript:</code> 링크는 자동으로 제거된다.
+    </p>
+  </header>
+
+  <main class="grid">
+    <section>
+      <h2>실제 영역 <small>(patch 결과)</small></h2>
+      <div id="actual" class="actual">
+        <h3 class="title">로봇 상태</h3>
+        <p>배터리: <b>80%</b></p>
+        <ul>
+          <li>모터 정상</li>
+          <li>센서 정상</li>
+        </ul>
+        <input type="checkbox" checked />
+        <a href="https://example.com">링크</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>테스트 영역 <small>(HTML 편집)</small></h2>
+      <textarea id="editor" spellcheck="false" aria-label="테스트 영역 HTML 편집기"></textarea>
+      <div class="buttons">
+        <button id="undo-btn">← 뒤로가기</button>
+        <button id="patch-btn" class="primary">Patch</button>
+        <button id="redo-btn">앞으로가기 →</button>
+        <span id="history-info"></span>
+      </div>
+    </section>
+  </main>
+
+  <section class="panel">
+    <h2>마지막 diff 결과 (patch 목록)</h2>
+    <pre id="patch-log"></pre>
+    <details>
+      <summary>현재 Virtual DOM 보기</summary>
+      <pre id="vdom-view"></pre>
+    </details>
+  </section>
+
+  <script type="module" src="src/phase1-app.js"></script>
+</body>
+</html>
