@@ -149,3 +149,5 @@ fiber-bailout은 같은 host 부모·확장 경로·출력 인덱스의 VCompone
 지표 시간 정의는 B-3과 같다. 경계 캐시·카운터 계측 비용을 포함한 이번 세션 안에서 비교하며 과거 B-3 숫자와 직접 성능비를 만들지 않는다.
 
 B-4 실측과 앱 변경 diff 전문은 [B-4 보고서](docs/codex/B4-fiber-bailout.md)에 있다. 보존된 원자료의 모든 카운터와 불변식은 `node lab/dev/summarize-bailout.mjs docs/results/fiber-bailout-b4/fiber-bailout-cross.json docs/results/fiber-bailout-b4`로 재집계할 수 있다.
+
+B-4 승인 후 최종 attempt 시간 분해·프로덕션 카운터 ON/OFF·객체 생성 위치·기존 경고 확인은 [B-4 진단 보고서](docs/codex/B4-diagnosis.md)에 기록했다. 엔진·앱 원본 변경 없이 계측만 추가했으며, 분석은 `node lab/dev/analyze-b4-diagnostics.mjs docs/results/fiber-b4-diagnostics`로 압축 원자료에서 재현한다.
