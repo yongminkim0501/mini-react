@@ -118,7 +118,14 @@ function main() {
   });
 
   // 자동화에서 결과를 읽을 수 있게 노출한다.
-  const lab = { params, results: runner.results, done: false, error: null, savedPath: null, waitForIdle };
+  const lab = { params, results: runner.results, done: false, error: null, savedPath: null, waitForIdle,
+    measureRun: runner.measureRun,
+    suspend() {
+      if (!current) return;
+      current.app.unmount(); current.progress.unmount(); current.unsubscribe(); current.engine.dispose?.();
+      current = null;
+    },
+  };
   Object.assign(window, { __lab: lab });
 
   setupPanel(runner);
