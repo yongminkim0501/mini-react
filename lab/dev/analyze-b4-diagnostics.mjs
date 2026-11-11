@@ -5,7 +5,10 @@ import {join} from 'node:path';
 import assert from 'node:assert/strict';
 import {percentile} from '../stats.js';
 const dir=process.argv[2];if(!dir)throw Error('Expected result directory');
-const load=async path=>JSON.parse(await readFile(path,'utf8'));
+const load=async path=>{
+ try{const b=await readFile(path);return JSON.parse(path.endsWith('.gz')?gunzipSync(b).toString():b.toString());}
+ catch(e){if(e.code!=='ENOENT'||path.endsWith('.gz'))throw e;return JSON.parse(gunzipSync(await readFile(path+'.gz')).toString());}
+};
 const baseline=await load(process.argv[3]??'docs/results/fiber-bailout-b4/fiber-bailout-cross.json');
 const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
 const merge=segments=>{
@@ -34,13 +37,16 @@ function finalAttempt(r) {
    sameQueryAborted:aborts.filter(e=>e.matchQuery===state.matchQuery).map(e=>({attemptId:e.attemptId,t:e.t,activeMs:e.activeMs})),
    discardedBeforeSyncMs:aborts.filter(e=>e.t<=sync.t).reduce((v,e)=>v+e.activeMs,0),
    abortsAfterSync:aborts.filter(e=>e.t>sync.t).length,
+   discardedRunSliceAfterInteractionMs:length(calls.filter(c=>c.rootId===commit.rootId&&aborts.some(e=>e.attemptId===c.attemptId)).map(c=>[Math.max(s.raw.interactionEnd.at,c.start),Math.min(end,c.end)])),
    interactionEndToSyncMs:sync.t-s.raw.interactionEnd.at,commitToFrameMs:s.raw.finalHeatmap.frameAt-end,
    settleMs:s.heatmapSettleMs,warnings:s.warnings};
  assert(result.browserGapMs>=-0.001);
  assert(Math.abs(result.interactionEndToSyncMs+result.syncToStartMs+result.elapsedMs+result.commitToFrameMs-result.settleMs)<0.001);
  return result;
 }
-const attemptRaw=await load(join(dir,'attempt.json'));
+let attemptRaw,attemptMethod='single-run diagnostic API';
+try{attemptRaw=await load(join(dir,'attempt-original.json'));attemptMethod='existing runner.runScenario';}
+catch(e){if(e.code!=='ENOENT')throw e;attemptRaw=await load(join(dir,'attempt.json'));}
 const attempts=attemptRaw.rows.map(finalAttempt);assert.equal(attempts.length,6);
 const original=[];
 for(const r of baseline.results.filter(r=>r.scenario==='S2'&&r.appVariant==='cached'&&r.engine!=='stack'))for(const [i,s] of r.perRun.entries()){
@@ -70,12 +76,14 @@ try {
   const rendering=['UpdateLayoutTree','RecalculateStyles','Layout','PrePaint','Paint','Layerize','CompositeLayers'];
   const spans=es.filter(e=>e.ph==='X'&&e.pid===marker.pid&&(!main||e.tid===main.tid)&&rendering.includes(e.name)).map(e=>[Math.max(a.start,e.ts/1000-offset),Math.min(a.end,(e.ts+e.dur)/1000-offset)]).filter(([s,e])=>e>s);
   const browserRenderingMs=length(spans),renderingInOwnCallsMs=length(overlap(spans,ownCalls));
-  trace.push({...a,traceFilename:r.traceFilename,clockOffsetMs:offset,browserRenderingMs,renderingInOwnCallsMs,
+  const renderingInAnyEngineCallsMs=length(overlap(spans,r.trace.calls.map(c=>[c.start,c.end])));
+  trace.push({...a,traceFilename:r.traceFilename,clockOffsetMs:offset,browserRenderingMs,renderingInOwnCallsMs,renderingInAnyEngineCallsMs,
+    renderingInGapMs:browserRenderingMs-renderingInAnyEngineCallsMs,
     renderingOutsideOwnCallsMs:browserRenderingMs-renderingInOwnCallsMs,
     byCategory:Object.fromEntries(rendering.map(name=>[name,length(es.filter(e=>e.ph==='X'&&e.name===name&&e.pid===marker.pid&&(!main||e.tid===main.tid)).map(e=>[Math.max(a.start,e.ts/1000-offset),Math.min(a.end,(e.ts+e.dur)/1000-offset)]))]))});
  }
 } catch(e){if(e.code!=='ENOENT')throw e;}
-let production=[],productionValidation=null;
+let production=[],productionValidation=null,productionLanes=[];
 try{
  const p=await load(join(dir,'production.json'));
  if(p.rows.length===72){
@@ -90,9 +98,18 @@ try{
    row.increaseDifferencePp=row.off.increasePercent-row.on.increasePercent;
    production.push(row);
   }
+  for(const scenario of ['S1','S3','S2'])for(const app of ['current','cached'])for(const counters of ['on','off'])for(const engine of ['fiber','fiber-bailout']){
+    const rows=p.rows.filter(r=>r.scenario===scenario&&r.appVariant===app&&r.counters===counters&&r.engine===engine);
+    productionLanes.push({scenario,app,counters,engine,commits:mean(rows.map(r=>r.summary.updateCount)),
+      syncCommits:mean(rows.map(r=>r.summary.syncUpdateCount)),
+      transitionCommits:mean(rows.map(r=>r.summary.raw.updates.filter(u=>u.lane===4&&!u.mounted).length)),
+      syncRenderMs:mean(rows.map(r=>r.summary.syncRenderActiveMean)),syncActiveMs:mean(rows.map(r=>r.summary.syncUpdateActiveMean)),
+      inputP95:mean(rows.map(r=>r.summary.inputP95)),clickP95:mean(rows.map(r=>r.summary.clickP95)),
+      warnings:rows.flatMap(r=>r.summary.warnings.map(w=>[r.runIndex+1,w]))});
+  }
   productionValidation={runs:p.rows.length,provenance:p.provenance,warnings:p.rows.filter(r=>r.summary.warnings.length).map(r=>({scenario:r.scenario,app:r.appVariant,engine:r.engine,counters:r.counters,run:r.runIndex+1,warnings:r.summary.warnings})),order:p.rows.map(r=>[r.scenario,r.runIndex,r.appVariant,r.engine,r.counters])};
  }
 } catch(e){if(e.code!=='ENOENT')throw e;}
-const result={original,attempts,warningCheck,trace,production,productionValidation};
+const result={attemptMethod,original,attempts,warningCheck,trace,production,productionLanes,productionValidation};
 await writeFile(join(dir,'analysis.json'),JSON.stringify(result,null,2)+'\n');
 console.log(JSON.stringify({attempts:attempts.length,traces:trace.length,productionRows:production.length,warningCheck},null,2));
