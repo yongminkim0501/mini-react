@@ -5,7 +5,7 @@ import {gzipSync} from 'node:zlib';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 const output=process.argv[2],phase=process.argv[3];
-if(!output||!['attempt','production','smoke','clean','trace'].includes(phase))throw Error('Expected output-dir and attempt|production|smoke');
+if(!output||!['attempt','attempt-original','production','smoke','clean','trace'].includes(phase))throw Error('Expected output-dir and attempt|production|smoke');
 await mkdir(output,{recursive:true});
 const provenance={commit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty:execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),phase,headed:true,cpuThrottle:1};
 const pages=()=>fetch('http://127.0.0.1:9331/json/list').then(r=>r.json());
@@ -23,13 +23,13 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const first=(await pages()).find(p=>p.type==='page');if(!first)throw Error('No Chrome page');
 const master=await connect(first);
 const clients=[];
-async function page(port) {
+async function page(port,search='engine=fiber&app=cached&size=20000&seed=42&cellCost=0',suspend=true) {
  const {targetId}=await master.send('Target.createTarget',{url:'about:blank'});
  const p=(await pages()).find(p=>p.id===targetId);const c=await connect(p);clients.push(c);
- await c.send('Page.navigate',{url:`http://127.0.0.1:${port}/lab/pages/heatmap.html?engine=fiber&app=cached&size=20000&seed=42&cellCost=0`});
+ await c.send('Page.navigate',{url:`http://127.0.0.1:${port}/lab/pages/heatmap.html?${search}`});
  await c.send('Page.bringToFront');
  for(let i=0;i<100;i++){await wait(100);if(await c.evaluate('Boolean(window.__lab?.measureRun)'))break;}
- await c.evaluate('__lab.waitForIdle()');await wait(2000);await c.evaluate('__lab.suspend()');return c;
+ await c.evaluate('__lab.waitForIdle()');await wait(2000);if(suspend)await c.evaluate('__lab.suspend()');return c;
 }
 const rows=[];
 async function run(c,scenario,engine,appVariant,runIndex,counters) {
@@ -43,7 +43,26 @@ async function run(c,scenario,engine,appVariant,runIndex,counters) {
  await c.evaluate('__lab.suspend()');return record;
 }
 try {
- if(phase==='clean'){
+ if(phase==='attempt-original'){
+  const c=await page(5181,'engines=fiber,fiber-bailout&apps=cached&size=20000&seed=42&cellCost=0&runs=3&scenario=S2',false);
+  await c.evaluate("import('/lab/dev/final-attempt-probe.js')");await c.evaluate('__b4AttemptProbe.clear()');
+  await c.evaluate("document.querySelector('#run-button').click()");
+  let done=false;
+  for(let i=0;i<180;i++){
+    await wait(1000);
+    const status=await c.evaluate("({done:__lab.results.length===2&&!document.querySelector('#run-button').disabled,fatal:document.querySelector('#fatal').hidden?null:document.querySelector('#fatal').textContent,status:document.querySelector('#run-status').textContent})");
+    if(status.fatal)throw Error(status.fatal);if(i%10===0)console.log(JSON.stringify(status));
+    if(status.done){done=true;break;}
+  }
+  if(!done)throw Error('Original runner timeout');
+  const data=await c.evaluate('({results:__lab.results,events:__b4AttemptProbe.events,calls:__b4AttemptProbe.calls})');
+  for(let i=0;i<3;i++)for(const r of data.results){
+    const summary=r.perRun[i],start=summary.raw.startedAt,end=summary.raw.endedAt;
+    rows.push({scenario:r.scenario,engine:r.engine,appVariant:r.appVariant,size:r.size,seed:r.seed,cellCost:r.cellCost,environment:r.environment,summary,counters:'on',runIndex:i,
+      trace:{events:data.events.filter(e=>e.t>=start&&e.t<=end+200),calls:data.calls.filter(c=>c.end>=start&&c.start<=end+200)}});
+  }
+  await writeFile(`${output}/attempt-original.json`,JSON.stringify({provenance,rows},null,2));await c.evaluate('__lab.suspend()');
+ }else if(phase==='clean'){
   for(const p of await pages())if(p.type==='page'&&/^http:\/\/127\.0\.0\.1:518[23]\//.test(p.url))await master.send('Target.closeTarget',{targetId:p.id});
  }else if(phase==='attempt'||phase==='trace'){
   const c=await page(5181);await c.evaluate("import('/lab/dev/final-attempt-probe.js')");
