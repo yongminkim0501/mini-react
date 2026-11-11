@@ -2,9 +2,9 @@
  * Uses the parser already shipped with Vite's Rolldown (no added dependency).
  */
 import { parseSync } from 'rolldown/utils';
-const fields=new Set(['counters','insideHeatmap','childrenInsideHeatmap']);
+const fields=new Set(['counters','insideHeatmap','childrenInsideHeatmap','boundaryVNodes']);
 const name=n=>n?.name ?? n?.value;
-const counterCall=n=>n?.type==='CallExpression' && ['count','newCounters'].includes(n.callee?.name);
+const counterCall=n=>n?.type==='CallExpression' && ['count','newCounters','visit'].includes(n.callee?.name);
 export function stripCounters(code, filename) {
   const {program,errors}=parseSync(filename,code);
   if(errors.length) throw Error(JSON.stringify(errors));
@@ -23,7 +23,8 @@ export function stripCounters(code, filename) {
       }
     }
     if(n.type==='ExpressionStatement' && n.expression.type==='AssignmentExpression' && fields.has(name(n.expression.left.property))) {put(n,'');return;}
-    if(n.type==='VariableDeclaration' && n.declarations.length===1 && name(n.declarations[0].id)==='inside') {put(n,'');return;}
+    if(n.type==='ExpressionStatement' && n.expression.type==='CallExpression' && n.expression.callee?.object?.name==='byVNode') {put(n,'');return;}
+    if(n.type==='VariableDeclaration' && n.declarations.length===1 && ['inside','relocated','visit','byVNode'].includes(name(n.declarations[0].id))) {put(n,'');return;}
     if(n.type==='IfStatement' && n.consequent?.type==='ExpressionStatement' && counterCall(n.consequent.expression?.expression ?? n.consequent.expression)) {put(n,'');return;}
     if(counterCall(n)) {put(n);return;}
     if(n.type==='CallExpression') {
