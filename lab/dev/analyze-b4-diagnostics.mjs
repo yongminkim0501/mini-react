@@ -10,7 +10,7 @@ const load=async path=>{
  catch(e){if(e.code!=='ENOENT'||path.endsWith('.gz'))throw e;return JSON.parse(gunzipSync(await readFile(path+'.gz')).toString());}
 };
 const baseline=await load(process.argv[3]??'docs/results/fiber-bailout-b4/fiber-bailout-cross.json');
-const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+const mean=a=>{const valid=a.filter(Number.isFinite);return valid.length?valid.reduce((s,x)=>s+x,0)/valid.length:null;};
 const merge=segments=>{
  const sorted=segments.filter(([s,e])=>e>s).sort((a,b)=>a[0]-b[0]),out=[];
  for(const [s,e] of sorted){const last=out.at(-1);if(last&&s<=last[1])last[1]=Math.max(e,last[1]);else out.push([s,e]);}return out;
